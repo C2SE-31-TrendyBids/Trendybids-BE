@@ -16,11 +16,12 @@ services:
       - app-network
   database:
     image: postgres:16
+    container_name: database
     ports:
-      - 5432:5435
+      - 5435:5432
     environment:
       POSTGRES_USER: trendybids
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_PASSWORD: 123456789
       POSTGRES_DB: trendybids_db
     networks:
       - app-network
