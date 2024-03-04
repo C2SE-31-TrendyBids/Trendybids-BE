@@ -8,7 +8,13 @@ const PrdImage = sequelize.define("prd_image", {
         allowNull: false,
         primaryKey: true,
     },
-    prd_imageURL: DataTypes.TEXT,
+    prdImageURL: {
+        type: DataTypes.TEXT,
+        field: 'prd_imageURL'
+    },
+}, {
+    tableName: 'prd_image',
+    timestamps: false
 });
 
 module.exports = PrdImage;

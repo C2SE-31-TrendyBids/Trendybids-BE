@@ -9,12 +9,24 @@ const Conversation = sequelize.define("conversation", {
         allowNull: false,
         primaryKey: true,
     },
-    creator_id: DataTypes.UUID,
-    recipient_id: DataTypes.UUID,
-    last_message_id: DataTypes.UUID,
+    creatorId: {
+        type: DataTypes.UUID,
+        field: 'creator_id',
+    },
+    recipientId: {
+        type: DataTypes.UUID,
+        field: 'recipient_id',
+    },
+    lastMessageId: {
+        type: DataTypes.UUID,
+        field: 'last_message_id',
+    },
+}, {
+    tableName: 'conversation',
+    timestamps: false
 });
 
-// Conversation.belongsTo(User, {foreignKey: 'creator_id', targetKey: 'id', as: 'creator', constraints: false})
-// Conversation.belongsTo(User, {foreignKey: 'recipient_id', targetKey: 'id', as: 'recipient', constraints: false})
+// Conversation.belongsTo(User, {foreignKey: 'creatorId', targetKey: 'id', as: 'creator', constraints: false})
+// Conversation.belongsTo(User, {foreignKey: 'recipientId', targetKey: 'id', as: 'recipient', constraints: false})
 
 module.exports = Conversation;

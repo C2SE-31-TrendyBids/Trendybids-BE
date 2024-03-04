@@ -11,31 +11,42 @@ const User = sequelize.define("user", {
         allowNull: false,
         primaryKey: true,
     },
-    full_name: DataTypes.STRING(50),
-    email: DataTypes.STRING,
-    phone_number: {
-        type: DataTypes.STRING(20),
-        allowNull: true
+    fullName: {
+        type: DataTypes.STRING(50),
+        field: 'full_name',
     },
-    avatar_url: {
+    email: DataTypes.STRING,
+    password: DataTypes.STRING,
+    phoneNumber: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        field: 'phone_number',
+    },
+    avatarUrl: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        field: 'avatar_url',
     },
     address: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    wallet_id: {
+    walletId: {
         type: DataTypes.UUID,
-        allowNull: true
+        allowNull: true,
+        field: 'wallet_id',
     },
-    role_id: {
+    roleId: {
         type: DataTypes.UUID,
-        allowNull: true
+        allowNull: true,
+        field: 'role_id',
     },
+}, {
+    tableName: 'user',
+    timestamps: false
 });
 
-User.belongsTo(Wallet, {foreignKey: 'wallet_id', targetKey: 'id', as: 'wallet'})
-User.belongsTo(Role, {foreignKey: 'role_id', targetKey: 'id', as: 'role'})
+User.belongsTo(Wallet, {foreignKey: 'walletId', targetKey: 'id', as: 'wallet'})
+User.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'})
 
 module.exports = User;

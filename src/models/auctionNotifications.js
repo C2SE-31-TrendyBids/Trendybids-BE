@@ -3,7 +3,7 @@ const {DataTypes} = require("sequelize");
 const User = require("./user");
 const Product = require("./product");
 
-const AuctionNotifications = sequelize.define("auction_notifications", {
+const AuctionNotification = sequelize.define("auction_notification", {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
@@ -12,11 +12,20 @@ const AuctionNotifications = sequelize.define("auction_notifications", {
     },
     title: DataTypes.STRING(50),
     content: DataTypes.TEXT,
-    owner_product_id: DataTypes.UUID,
-    product_id: DataTypes.UUID,
+    ownerProductId: {
+        type: DataTypes.UUID,
+        field: 'owner_product_id'
+    },
+    productId: {
+        type: DataTypes.UUID,
+        field: 'product_id',
+    },
+}, {
+    tableName: 'auction_notification',
+    timestamps: false
 });
 
-AuctionNotifications.belongsTo(User, {foreignKey: 'owner_product_id', targetKey: 'id'})
-AuctionNotifications.belongsTo(Product, {foreignKey: 'product_id', targetKey: 'id'})
+AuctionNotification.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id'})
+AuctionNotification.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id'})
 
-module.exports = AuctionNotifications;
+module.exports = AuctionNotification;

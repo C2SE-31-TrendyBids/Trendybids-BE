@@ -12,18 +12,39 @@ const Product = sequelize.define("product", {
         allowNull: false,
         primaryKey: true,
     },
-    product_name: DataTypes.STRING(50),
+    productName: {
+        type: DataTypes.STRING(50),
+        field: 'product_name',
+    },
     description: DataTypes.TEXT,
-    starting_price: DataTypes.DECIMAL(10,2),
-    image_id: DataTypes.UUID,
-    category_id: DataTypes.UUID,
-    owner_product_id: DataTypes.UUID,
-    censor_id: DataTypes.UUID,
+    startingPrice: {
+        type: DataTypes.DECIMAL(10, 2),
+        field: 'starting_price',
+    },
+    imageId: {
+        type: DataTypes.UUID,
+        field: 'image_id',
+    },
+    categoryId: {
+        type: DataTypes.UUID,
+        field: 'category_id',
+    },
+    ownerProductId: {
+        type: DataTypes.UUID,
+        field: 'owner_product_id',
+    },
+    censorId: {
+        type: DataTypes.UUID,
+        field: 'censor_id',
+    },
+}, {
+    tableName: 'product',
+    timestamps: false
 });
 
-Product.belongsTo(PrdImage, {foreignKey: 'image_id', targetKey: 'id', as: 'image'})
-Product.belongsTo(Category, {foreignKey: 'category_id', targetKey: 'id', as: 'category'})
-Product.belongsTo(User, {foreignKey: 'owner_product_id', targetKey: 'id', as: 'owner'})
-Product.belongsTo(Censor, {foreignKey: 'censor_id', targetKey: 'id', as: 'censor'})
+Product.belongsTo(PrdImage, {foreignKey: 'imageId', targetKey: 'id', as: 'image'})
+Product.belongsTo(Category, {foreignKey: 'categoryId', targetKey: 'id', as: 'category'})
+Product.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner'})
+Product.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
 
 module.exports = Product;
