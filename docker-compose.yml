@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  app:
+    image: node:16.16
+    container_name: app
+    restart: always
+    command: sh -c "npm install && npm start"
+    ports:
+      - 5000:5000
+    working_dir: /app
+    volumes:
+      - ./:/app
+    depends_on:
+      - database
+    networks:
+      - app-network
+  database:
+    image: postgres:16
+    ports:
+      - 5432:5435
+    environment:
+      POSTGRES_USER: trendybids
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: trendybids_db
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge
