@@ -115,6 +115,57 @@ class AuthService {
             refreshToken: jwtRt,
         }
     }
+
+    async forgotPassword({email}, res){
+        const user = await User.findOne({
+            where: {email}
+        })
+        if (!user) {
+            return res.status(401).json({
+                message: "Email hasn't been registered"
+            });
+        }
+
+        // Generate OTP and send email reset password
+        const otp = crypto.randomInt(100000, 999999).toString();
+        cache.set(`${user.id}-reset-pass_otp`, otp, 300);
+        await sendEmail({
+            email,
+            subject: "Request a new password reset - TrendyBids",
+            html: readFileTemplate('forgotPassword.hbs',{otp: otp, fullName: user.fullName})
+        })
+
+        return res.status(200).json({
+            message: "Send to your email successfully",
+        });
+    }
+
+    async resetPassword({email, password, otp}, res){
+        const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
+        const user = await User.findOne({
+            where: {email}
+        })
+        if (!user) {
+            return res.status(401).json({
+                message: 'The email sent does not match the registered email'
+            });
+        }
+
+        const otpCache = cache.get(`${user.id}-reset-pass_otp`);
+        if (!otpCache || otpCache !== otp) {
+            return res.status(400).json({
+                message: otpCache ? 'Invalid OTP' : 'OTP has expired'
+            });
+        }
+
+        user.password = hashPassword
+        await user.save()
+        cache.del(`${user.id}-reset-pass_otp`);
+
+        return res.status(200).json({
+            message: 'Reset password successfully'
+        });
+    }
 }
 
 module.exports = new AuthService()

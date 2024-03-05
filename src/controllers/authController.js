@@ -1,5 +1,5 @@
 const authServices = require("../services/authService")
-const {validateRegister, validateVerify, validateLogin} = require('../helpers/joiSchema')
+const {validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword} = require('../helpers/joiSchema')
 
 class AuthController {
     async register(req, res) {
@@ -40,6 +40,36 @@ class AuthController {
                     message: error.details[0].message,
                 });
             return authServices.login(req.body, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    async forgotPassword(req, res) {
+        try {
+            const {error} = validateForgotPassword.validate(req.body);
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return authServices.forgotPassword(req.body, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    async resetPassword(req, res) {
+        try {
+            const {error} = validateResetPassword.validate(req.body);
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return authServices.resetPassword(req.body, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
