@@ -76,20 +76,26 @@ class AuthService {
         const user = await User.findOne({
             where: {email}
         })
+        if (!user || user.status === 'Pre-Active') {
+            return res.status(401).json({
+                message: !user ? "Email hasn't been registered" : "User is not yet verified"
+            });
+        }
         const isChecked = user && bcrypt.compareSync(password, user.password);
-
-        const {accessToken, refreshToken} = isChecked && this.generateJwtToken(user.id, email)
-
-        if(refreshToken) {
-            user.refreshToken = refreshToken;
+        if (!isChecked) {
+            return res.status(401).json({
+                message: "Incorrect password"
+            })
+        }
+        const token = this.generateJwtToken(user.id, email)
+        if(token.refreshToken) {
+            user.refreshToken = token.refreshToken;
             await user.save()
         }
 
-        const status = accessToken ? 200 : user ? 401 : 404;
-        return res.status(status).json({
-            message: accessToken ? "Login is successfully" : user ? "Password was incorrect" : "Email hasn't been registered",
-            accessToken: accessToken ? accessToken : null,
-            refreshToken: accessToken ? accessToken : null
+        return res.status(200).json({
+            message: "Login is successfully",
+            ...token
         });
     }
 
