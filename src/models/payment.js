@@ -10,10 +10,19 @@ const Payment = sequelize.define("payment", {
         primaryKey: true,
     },
     amount: DataTypes.DECIMAL(10, 2),
-    payment_time: DataTypes.DATE,
-    user_id: DataTypes.UUID,
+    paymentTime: {
+        type: DataTypes.DATE,
+        field: 'payment_time',
+    },
+    userId: {
+        type: DataTypes.UUID,
+        field: 'user_id',
+    },
+}, {
+    tableName: 'payment',
+    timestamps: false
 });
 
-Payment.belongsTo(User, {foreignKey: 'user_id', targetKey: 'id', as: 'user'})
+Payment.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
 
 module.exports = Payment;

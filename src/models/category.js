@@ -9,6 +9,9 @@ const Category = sequelize.define("category", {
         primaryKey: true,
     },
     name: DataTypes.STRING(100),
+}, {
+    tableName: 'category',
+    timestamps: false
 });
 
 module.exports = Category;
