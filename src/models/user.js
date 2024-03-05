@@ -2,7 +2,6 @@ const {DataTypes} = require("sequelize");
 const sequelize = require("../util/database");
 const Role = require('./role')
 const Wallet = require('./wallet')
-const Feedback = require('./feedback')
 
 const User = sequelize.define("user", {
     id: {
@@ -29,6 +28,15 @@ const User = sequelize.define("user", {
     },
     address: {
         type: DataTypes.TEXT,
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.ENUM('Pre-Active', 'Active', 'Suspended'),
+        defaultValue: 'Pre-Active',
+    },
+    refreshToken: {
+        type: DataTypes.STRING,
+        field: 'refresh_token',
         allowNull: true
     },
     walletId: {
