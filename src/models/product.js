@@ -26,7 +26,7 @@ const Product = sequelize.define("product", {
         field: 'image_id',
     },
     categoryId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         field: 'category_id',
     },
     ownerProductId: {
