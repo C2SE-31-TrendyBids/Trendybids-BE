@@ -1,19 +1,5 @@
 version: '3.8'
 services:
-  app:
-    image: node:16.16
-    container_name: app
-    restart: always
-    command: sh -c "npm install && npm start"
-    ports:
-      - 5000:5000
-    working_dir: /app
-    volumes:
-      - ./:/app
-    depends_on:
-      - database
-    networks:
-      - app-network
   database:
     image: postgres:16
     container_name: database
