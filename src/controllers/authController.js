@@ -76,6 +76,21 @@ class AuthController {
             });
         }
     }
+
+    async loginSuccessGoogle(req, res)  {
+        try {
+            const { googleId } = req?.body
+            if (!googleId)
+                res.status(400).json({
+                    message: 'Missing inputs'
+                })
+            return authServices.loginSuccessGoogle(googleId, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
 }
 
 module.exports = new AuthController;
