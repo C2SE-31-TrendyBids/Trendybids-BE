@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const NodeCache = require('node-cache');
 const User = require('../models/user');
+const Role = require('../models/role')
+const Wallet = require('../models/wallet')
 const sendEmail = require('../util/sendMail')
 const readFileTemplate = require('../helpers/readFileTemplate')
 const jwt = require("jsonwebtoken");
@@ -9,25 +11,24 @@ const jwt = require("jsonwebtoken");
 
 const cache = new NodeCache();
 class AuthService {
-    async register({email, password, fullName}, res) {
+    async register({ email, password, fullName }, res) {
         try {
             const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
             const [user, created] = await User.findOrCreate({
-                where: {email},
+                where: { email },
                 defaults: {
                     email,
                     fullName,
                     password: hashPassword,
                 }
             })
-
             // Generate OTP and send email verify
             const otp = crypto.randomInt(100000, 999999).toString();
             cache.set(`${user.id}-verify_otp`, otp, 300);
             await sendEmail({
                 email,
                 subject: "Verify your email address - TrendyBids",
-                html: readFileTemplate('verifyEmail.hbs',{otp: otp})
+                html: readFileTemplate('verifyEmail.hbs', { otp: otp })
             })
 
             const status = created ? 201 : 409;
@@ -39,7 +40,7 @@ class AuthService {
         }
     }
 
-    async verifyOTP({email, otp}, res) {
+    async verifyOTP({ email, otp }, res) {
         try {
             const user = await User.findOne({
                 where: { email },
@@ -72,12 +73,12 @@ class AuthService {
         }
     }
 
-    async login({email, password}, res) {
+    async login({ email, password }, res) {
         const user = await User.findOne({
-            where: {email}
+            where: { email }
         })
         if (!user || user.status === 'Pre-Active') {
-            return res.status(401).json({
+            return res.status(404).json({
                 message: !user ? "Email hasn't been registered" : "User is not yet verified"
             });
         }
@@ -88,7 +89,7 @@ class AuthService {
             })
         }
         const token = this.generateJwtToken(user.id, email)
-        if(token.refreshToken) {
+        if (token.refreshToken) {
             user.refreshToken = token.refreshToken;
             await user.save()
         }
@@ -99,7 +100,7 @@ class AuthService {
         });
     }
 
-    generateJwtToken(userId, email){
+    generateJwtToken(userId, email) {
         const jwtAt = jwt.sign(
             { sub: userId, email },
             process.env.JWT_AT_SECRET,
@@ -116,9 +117,9 @@ class AuthService {
         }
     }
 
-    async forgotPassword({email}, res){
+    async forgotPassword({ email }, res) {
         const user = await User.findOne({
-            where: {email}
+            where: { email }
         })
         if (!user) {
             return res.status(401).json({
@@ -132,7 +133,7 @@ class AuthService {
         await sendEmail({
             email,
             subject: "Request a new password reset - TrendyBids",
-            html: readFileTemplate('forgotPassword.hbs',{otp: otp, fullName: user.fullName})
+            html: readFileTemplate('forgotPassword.hbs', { otp: otp, fullName: user.fullName })
         })
 
         return res.status(200).json({
@@ -140,10 +141,10 @@ class AuthService {
         });
     }
 
-    async resetPassword({email, password, otp}, res){
+    async resetPassword({ email, password, otp }, res) {
         const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
         const user = await User.findOne({
-            where: {email}
+            where: { email }
         })
         if (!user) {
             return res.status(401).json({
@@ -166,6 +167,53 @@ class AuthService {
             message: 'Reset password successfully'
         });
     }
+    getEmailFromToken(token, secret) {
+        try {
+            const decodedToken = jwt.verify(token, secret);
+            return decodedToken.email;
+        } catch (error) {
+            console.error('Error decoding token:', error.message);
+            return null;
+        }
+    }
+    async getUserByToken({ accessToken }, res) {
+        try {
+            const email = await this.getEmailFromToken(accessToken, process.env.JWT_AT_SECRET);
+
+            if (!email) {
+                return res.status(401).json({
+                    message: 'Invalid access token'
+                });
+            }
+
+            const user = await User.findOne({
+                where: { email },
+                include: [{
+                    model: Role,
+                    as: 'role',
+                }, {
+                    model: Wallet,
+                    as: 'wallet',
+                }
+                ]
+            });
+
+            if (!user) {
+                return res.status(401).json({
+                    message: 'The email sent does not match any registered email'
+                });
+            }
+
+
+            return res.status(200).json({ user });
+        } catch (error) {
+            console.error('Error retrieving user by token:', error.message);
+            return res.status(500).json({
+                message: 'Internal server error'
+            });
+        }
+    }
+
 }
 
 module.exports = new AuthService()
