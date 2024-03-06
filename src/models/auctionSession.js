@@ -1,5 +1,6 @@
 const sequelize = require("../util/database");
 const {DataTypes} = require("sequelize");
+const ProductAuction = require("./productAuction");
 
 const AuctionSession = sequelize.define("auction_session", {
     id: {
@@ -8,13 +9,36 @@ const AuctionSession = sequelize.define("auction_session", {
         allowNull: false,
         primaryKey: true,
     },
-    start_time: DataTypes.DATE,
-    end_time: DataTypes.DATE,
-    highest_price: DataTypes.DECIMAL(10, 2),
-    highest_bidder: DataTypes.UUID,
+    startTime: {
+        type: DataTypes.DATE,
+        field: 'start_time',
+    },
+    endTime: {
+        type: DataTypes.DATE,
+        field: 'end_time',
+    },
+    highestPrice: {
+        type: DataTypes.DECIMAL(10, 2),
+        field: 'highest_price',
+    },
+    highestBidder: {
+        type: DataTypes.UUID,
+        field: 'highest_bidder',
+    },
     status: DataTypes.ENUM('ongoing', 'ended', 'cancelled', 'not_started'),
-    total_number_auction: DataTypes.INTEGER,
-    product_auction_id: DataTypes.UUID,
+    totalNumberAuction: {
+        type: DataTypes.INTEGER,
+        field: 'total_number_auction',
+    },
+    productAuctionId: {
+        type: DataTypes.UUID,
+        field: 'product_auction_id',
+    },
+}, {
+    tableName: 'auction_session',
+    timestamps: false
 });
+
+AuctionSession.belongsTo(ProductAuction, {foreignKey: 'productAuctionId', targetKey: 'id', as: 'productAuction'})
 
 module.exports = AuctionSession;

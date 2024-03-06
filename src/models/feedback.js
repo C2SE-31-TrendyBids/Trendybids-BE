@@ -11,9 +11,20 @@ const Feedback = sequelize.define("feedback", {
     },
     rating: DataTypes.SMALLINT,
     message: DataTypes.TEXT,
-    user_id: DataTypes.UUID,
+    userId: {
+        type: DataTypes.UUID,
+        field: 'user_id'
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        field: 'created_at',
+        timestamps: true
+    }
+}, {
+    tableName: 'feedback',
+    timestamps: false
 });
 
-Feedback.belongsTo(User, {foreignKey: 'user_id', targetKey: 'id', as: 'user'})
+Feedback.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
 
 module.exports = Feedback;

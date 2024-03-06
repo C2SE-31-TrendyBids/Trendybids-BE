@@ -10,6 +10,9 @@ const Wallet = sequelize.define("wallet", {
         primaryKey: true,
     },
     money: DataTypes.DECIMAL(10,2),
+}, {
+    tableName: 'wallet',
+    timestamps: false
 });
 
 Wallet.hasOne(User)
