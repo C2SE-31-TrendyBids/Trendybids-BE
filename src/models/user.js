@@ -42,11 +42,6 @@ const User = sequelize.define("user", {
         field: 'refresh_token',
         allowNull: true
     },
-    googleId: {
-        type: DataTypes.STRING,
-        field: 'google_id',
-        allowNull: true
-    },
     walletId: {
         type: DataTypes.UUID,
         allowNull: true,

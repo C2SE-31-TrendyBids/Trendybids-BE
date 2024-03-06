@@ -1,5 +1,6 @@
 const authServices = require("../services/authService")
 const {validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword} = require('../helpers/joiSchema')
+const authService = require("../services/authService");
 
 class AuthController {
     async register(req, res) {
@@ -79,12 +80,8 @@ class AuthController {
 
     async loginSuccessGoogle(req, res)  {
         try {
-            const { googleId } = req?.body
-            if (!googleId)
-                res.status(400).json({
-                    message: 'Missing inputs'
-                })
-            return authServices.loginSuccessGoogle(googleId, res)
+            const {accessToken, refreshToken} = req.user
+            res.redirect(`${process.env.CLIENT_URL}/login-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
