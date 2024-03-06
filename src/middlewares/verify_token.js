@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user")
+const User = require("../models/user");
+const Role = require("../models/role");
 
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization;
@@ -26,17 +27,43 @@ const verifyToken = (req, res, next) => {
                 });
             }
         }
-
-        const user = await User.findOne({
-            where: { email: decode.email },
+        req.user = await User.findOne({
+            where: { id: decode.id },
             attributes: {
-                exclude: ["password", "refreshToken", "createdAt", "updatedAt"],
+                exclude: ["password", "refreshToken", "roleId"],
             },
+            include: [
+                { model: Role, attributes: ["id", "name"], as: 'role' }
+            ]
         });
-        req.user = user;
-
         next();
     });
 };
 
-module.exports = verifyToken;
+const isCensor = (req, res, next) => {
+    const role = req.user?.role;
+    if (role.id !== 'R02') {
+        return res.status(401).json({
+            err: 1,
+            message: "Require role censor",
+        });
+    }
+    next();
+};
+
+const isAdmin = (req, res, next) => {
+    const role = req.user?.role;
+    if (role.id !== 'R03') {
+        return res.status(401).json({
+            err: 1,
+            message: "Require role admin",
+        });
+    }
+    next();
+};
+
+module.exports = {
+    verifyToken,
+    isCensor,
+    isAdmin
+};

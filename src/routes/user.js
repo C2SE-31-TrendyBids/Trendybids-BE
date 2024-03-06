@@ -4,6 +4,6 @@ const router = express.Router();
 const verifyToken = require("../middlewares/verify_token");
 
 
-router.use(verifyToken);
+router.use(verifyToken.verifyToken);
 router.get("/get-current-user", userControllers.getCurrentUser)
 module.exports = router;
