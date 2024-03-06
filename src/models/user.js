@@ -53,8 +53,9 @@ const User = sequelize.define("user", {
         field: 'wallet_id',
     },
     roleId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         allowNull: true,
+        defaultValue: 'R01',
         field: 'role_id',
     },
 }, {

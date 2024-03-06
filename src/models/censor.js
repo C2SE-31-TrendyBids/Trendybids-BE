@@ -30,7 +30,7 @@ const Censor = sequelize.define("censor", {
         field: 'user_id',
     },
     roleId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         field: 'role_id',
     },
 }, {
