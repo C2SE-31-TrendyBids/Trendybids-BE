@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 require("dotenv").config();
 require("./src/util/database")
 require("./src/models")
+require("./src/util/passportGoogle")
 
 const initRoutes = require("./src/routes");
 

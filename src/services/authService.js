@@ -35,7 +35,7 @@ class AuthService {
                 message: created ? "Register is successfully" : "Email has already registered",
             });
         } catch (error) {
-            console.log(error)
+            throw new Error(error)
         }
     }
 
@@ -68,35 +68,39 @@ class AuthService {
                 message: 'Success verified',
             })
         } catch (error) {
-            console.log(error)
+            throw new Error(error)
         }
     }
 
     async login({email, password}, res) {
-        const user = await User.findOne({
-            where: {email}
-        })
-        if (!user || user.status === 'Pre-Active') {
-            return res.status(401).json({
-                message: !user ? "Email hasn't been registered" : "User is not yet verified"
-            });
-        }
-        const isChecked = user && bcrypt.compareSync(password, user.password);
-        if (!isChecked) {
-            return res.status(401).json({
-                message: "Incorrect password"
+        try {
+            const user = await User.findOne({
+                where: {email}
             })
-        }
-        const token = this.generateJwtToken(user.id, email)
-        if(token.refreshToken) {
-            user.refreshToken = token.refreshToken;
-            await user.save()
-        }
+            if (!user || user.status === 'Pre-Active') {
+                return res.status(401).json({
+                    message: !user ? "Email hasn't been registered" : "User is not yet verified"
+                });
+            }
+            const isChecked = user && bcrypt.compareSync(password, user.password);
+            if (!isChecked) {
+                return res.status(401).json({
+                    message: "Incorrect password"
+                })
+            }
+            const token = this.generateJwtToken(user.id, email)
+            if(token.refreshToken) {
+                user.refreshToken = token.refreshToken;
+                await user.save()
+            }
 
-        return res.status(200).json({
-            message: "Login is successfully",
-            ...token
-        });
+            return res.status(200).json({
+                message: "Login is successfully",
+                ...token
+            });
+        } catch (error) {
+            throw new Error(error)
+        }
     }
 
     generateJwtToken(userId, email){
@@ -117,54 +121,77 @@ class AuthService {
     }
 
     async forgotPassword({email}, res){
-        const user = await User.findOne({
-            where: {email}
-        })
-        if (!user) {
-            return res.status(401).json({
-                message: "Email hasn't been registered"
+        try {
+            const user = await User.findOne({
+                where: {email}
+            })
+            if (!user) {
+                return res.status(401).json({
+                    message: "Email hasn't been registered"
+                });
+            }
+
+            // Generate OTP and send email reset password
+            const otp = crypto.randomInt(100000, 999999).toString();
+            cache.set(`${user.id}-reset-pass_otp`, otp, 300);
+            await sendEmail({
+                email,
+                subject: "Request a new password reset - TrendyBids",
+                html: readFileTemplate('forgotPassword.hbs',{otp: otp, fullName: user.fullName})
+            })
+
+            return res.status(200).json({
+                message: "Send to your email successfully",
             });
+        } catch (error) {
+            throw new Error(error)
         }
-
-        // Generate OTP and send email reset password
-        const otp = crypto.randomInt(100000, 999999).toString();
-        cache.set(`${user.id}-reset-pass_otp`, otp, 300);
-        await sendEmail({
-            email,
-            subject: "Request a new password reset - TrendyBids",
-            html: readFileTemplate('forgotPassword.hbs',{otp: otp, fullName: user.fullName})
-        })
-
-        return res.status(200).json({
-            message: "Send to your email successfully",
-        });
     }
 
     async resetPassword({email, password, otp}, res){
-        const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
-        const user = await User.findOne({
-            where: {email}
-        })
-        if (!user) {
-            return res.status(401).json({
-                message: 'The email sent does not match the registered email'
+        try {
+            const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
+            const user = await User.findOne({
+                where: {email}
+            })
+            if (!user) {
+                return res.status(401).json({
+                    message: 'The email sent does not match the registered email'
+                });
+            }
+
+            const otpCache = cache.get(`${user.id}-reset-pass_otp`);
+            if (!otpCache || otpCache !== otp) {
+                return res.status(400).json({
+                    message: otpCache ? 'Invalid OTP' : 'OTP has expired'
+                });
+            }
+
+            user.password = hashPassword
+            await user.save()
+            cache.del(`${user.id}-reset-pass_otp`);
+
+            return res.status(200).json({
+                message: 'Reset password successfully'
             });
+        } catch (error) {
+            throw new Error(error)
         }
+    }
 
-        const otpCache = cache.get(`${user.id}-reset-pass_otp`);
-        if (!otpCache || otpCache !== otp) {
-            return res.status(400).json({
-                message: otpCache ? 'Invalid OTP' : 'OTP has expired'
-            });
+    async loginSuccessGoogle(googleId, res) {
+        try {
+            const user = await User.findOne({
+                where: { googleId },
+            })
+            const token = this.generateJwtToken(user.id, user.email)
+            return res.status(200).json({
+                message: "Login successfully",
+                ...token
+            })
+        } catch (error) {
+            throw new Error(error);
         }
-
-        user.password = hashPassword
-        await user.save()
-        cache.del(`${user.id}-reset-pass_otp`);
-
-        return res.status(200).json({
-            message: 'Reset password successfully'
-        });
     }
 }
 
