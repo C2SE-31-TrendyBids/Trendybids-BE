@@ -178,21 +178,7 @@ class AuthService {
             throw new Error(error)
         }
     }
-
-    async loginSuccessGoogle(googleId, res) {
-        try {
-            const user = await User.findOne({
-                where: { googleId },
-            })
-            const token = this.generateJwtToken(user.id, user.email)
-            return res.status(200).json({
-                message: "Login successfully",
-                ...token
-            })
-        } catch (error) {
-            throw new Error(error);
-        }
-    }
 }
+
 
 module.exports = new AuthService()
