@@ -105,12 +105,12 @@ class AuthService {
 
     generateJwtToken(userId, email){
         const jwtAt = jwt.sign(
-            { sub: userId, email },
+            { id: userId, email },
             process.env.JWT_AT_SECRET,
             { expiresIn: "2d" }
         )
         const jwtRt = jwt.sign(
-            { sub: userId, email },
+            { id: userId, email },
             process.env.JWT_RT_SECRET,
             { expiresIn: "30d" }
         )
