@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon node app.js"
+    "start": "nodemon node app.js",
+    "seed": "node src/seeders/main-seeder.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
