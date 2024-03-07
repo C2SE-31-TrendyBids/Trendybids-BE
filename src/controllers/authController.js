@@ -1,6 +1,7 @@
 const authServices = require("../services/authService")
 const { validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword } = require('../helpers/joiSchema')
 
+
 class AuthController {
     async register(req, res) {
         try {
@@ -76,26 +77,12 @@ class AuthController {
             });
         }
     }
-    async getUserByToken(req, res) {
+
+    async loginSuccessGoogle(req, res) {
         try {
-            const accessToken = req.headers.authorization;
-
-            if (!accessToken) {
-                return res.status(400).json({
-                    message: "Access token is required",
-                });
-            }
-
-            const user = await authServices.getUserByToken({ accessToken }, res);
-            if (!user) {
-                return res.status(404).json({
-                    message: "User not found",
-                });
-            }
-
-            return user
+            const { accessToken, refreshToken } = req.user
+            res.redirect(`${process.env.CLIENT_URL}/login-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
         } catch (error) {
-            console.error("Error getting user by token:", error.message);
             return res.status(500).json({
                 message: "Internal Server Error",
             });

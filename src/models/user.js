@@ -15,7 +15,10 @@ const User = sequelize.define("user", {
         field: 'full_name',
     },
     email: DataTypes.STRING,
-    password: DataTypes.STRING,
+    password: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     phoneNumber: {
         type: DataTypes.STRING(20),
         allowNull: true,
@@ -45,8 +48,9 @@ const User = sequelize.define("user", {
         field: 'wallet_id',
     },
     roleId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(10),
         allowNull: true,
+        defaultValue: 'R01',
         field: 'role_id',
     },
 }, {

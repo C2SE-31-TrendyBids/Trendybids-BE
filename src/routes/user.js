@@ -1,9 +1,8 @@
-const userControllers = require("../controllers/userControllers");
 const express = require("express");
 const router = express.Router();
-const verifyToken = require("../middlewares/verify_token");
+const userController = require("../controllers/userController");
+const { verifyToken, isAdmin, isCensor } = require("../middlewares/verifyToken");
 
+router.get("/me", verifyToken, userController.getCurrentUser);
 
-router.use(verifyToken.verifyToken);
-router.get("/get-current-user", userControllers.getCurrentUser)
 module.exports = router;

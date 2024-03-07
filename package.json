@@ -20,11 +20,14 @@
     "morgan": "~1.9.1",
     "node-cache": "^5.1.2",
     "nodemailer": "^6.9.11",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "process": "^0.11.10",
     "pug": "2.0.0-beta11",
-    "sequelize": "^6.37.1"
+    "sequelize": "^6.37.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
