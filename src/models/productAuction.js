@@ -11,13 +11,30 @@ const ProductAuction = sequelize.define("product_auction", {
         primaryKey: true,
     },
     description: DataTypes.TEXT,
-    start_time: DataTypes.DATE,
-    number_of_participation: DataTypes.INTEGER,
-    product_id: DataTypes.UUID,
-    censor_id: DataTypes.UUID,
+    startTime: {
+        type: DataTypes.DATE,
+        field: 'start_time',
+    },
+    numberOfParticipation: {
+        type: DataTypes.INTEGER,
+        field: 'number_of_participation',
+    },
+    productId: {
+        type: DataTypes.UUID,
+        field: 'product_id',
+    },
+    censorId: {
+        type: DataTypes.UUID,
+        field: 'censor_id',
+    },
+}, {
+    tableName: 'product_auction',
+    timestamps: false
 });
 
-ProductAuction.belongsTo(Product, {foreignKey: 'product_id', targetKey: 'id', as: 'product'})
-ProductAuction.belongsTo(Censor, {foreignKey: 'censor_id', targetKey: 'id', as: 'censor'})
+
+ProductAuction.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id', as: 'product'})
+ProductAuction.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
+
 
 module.exports = ProductAuction;

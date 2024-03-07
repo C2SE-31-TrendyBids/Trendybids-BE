@@ -3,9 +3,14 @@ const productAuctionServices = require("../services/product-auction")
 
 class ProductAuctionController {
 
-    async  getAll(req,res){
-        const response = await productAuctionServices.getAll(req.query)
-        return res.status(200).json(response);
+    async getAll(req, res) {
+        try {
+            return await productAuctionServices.getAll(req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
     }
 }
 

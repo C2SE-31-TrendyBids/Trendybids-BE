@@ -11,16 +11,34 @@ const Censor = sequelize.define("censor", {
         primaryKey: true,
     },
     name: DataTypes.STRING,
-    phone_number: DataTypes.STRING(20),
-    avatar_url: DataTypes.TEXT,
+    phoneNumber: {
+        type: DataTypes.STRING(20),
+        field: 'phone_number',
+    },
+    avatarUrl: {
+        type: DataTypes.TEXT,
+        field: 'avatar_url',
+    },
     founding: DataTypes.DATE,
     address: DataTypes.TEXT,
-    wallet_id: DataTypes.UUID,
-    user_id: DataTypes.UUID,
-    role_id: DataTypes.UUID,
+    walletId: {
+        type: DataTypes.UUID,
+        field: 'wallet_id',
+    },
+    userId: {
+        type: DataTypes.UUID,
+        field: 'user_id',
+    },
+    roleId: {
+        type: DataTypes.STRING(10),
+        field: 'role_id',
+    },
+}, {
+    tableName: 'censor',
+    timestamps: false
 });
 
-Censor.belongsTo(User, {foreignKey: 'user_id', targetKey: 'id', as: 'user'})
-Censor.belongsTo(Role, {foreignKey: 'role_id', targetKey: 'id', as: 'role'})
+Censor.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
+Censor.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'})
 
 module.exports = Censor;

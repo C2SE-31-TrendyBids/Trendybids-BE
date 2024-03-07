@@ -2,6 +2,7 @@ const sequelize = require("../util/database");
 const {DataTypes} = require("sequelize");
 const Product = require("./product");
 
+
 const PrdImage = sequelize.define("prd_image", {
     id: {
         type: DataTypes.UUID,
@@ -9,10 +10,18 @@ const PrdImage = sequelize.define("prd_image", {
         allowNull: false,
         primaryKey: true,
     },
-    prd_imageURL: DataTypes.TEXT,
-    product_id: DataTypes.UUID,
+    prdImageURL: {
+        type: DataTypes.TEXT,
+        field: 'prd_imageURL'
+    },
+    productId: {
+        type: DataTypes.UUID,
+        field: 'product_id',
+    },
+}, {
+    tableName: 'prd_image',
+    timestamps: false
 });
 
-// PrdImage.belongsTo(Product, {foreignKey: 'product_id', targetKey: 'id', as: 'product'})
 
 module.exports = PrdImage;

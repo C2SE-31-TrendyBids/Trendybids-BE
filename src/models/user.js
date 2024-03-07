@@ -2,7 +2,6 @@ const {DataTypes} = require("sequelize");
 const sequelize = require("../util/database");
 const Role = require('./role')
 const Wallet = require('./wallet')
-const Feedback = require('./feedback')
 
 const User = sequelize.define("user", {
     id: {
@@ -11,31 +10,55 @@ const User = sequelize.define("user", {
         allowNull: false,
         primaryKey: true,
     },
-    full_name: DataTypes.STRING(50),
+    fullName: {
+        type: DataTypes.STRING(50),
+        field: 'full_name',
+    },
     email: DataTypes.STRING,
-    phone_number: {
-        type: DataTypes.STRING(20),
+    password: {
+        type: DataTypes.STRING,
         allowNull: true
     },
-    avatar_url: {
+    phoneNumber: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        field: 'phone_number',
+    },
+    avatarUrl: {
         type: DataTypes.TEXT,
-        allowNull: true
+        allowNull: true,
+        field: 'avatar_url',
     },
     address: {
         type: DataTypes.TEXT,
         allowNull: true
     },
-    wallet_id: {
-        type: DataTypes.UUID,
+    status: {
+        type: DataTypes.ENUM('Pre-Active', 'Active', 'Suspended'),
+        defaultValue: 'Pre-Active',
+    },
+    refreshToken: {
+        type: DataTypes.STRING,
+        field: 'refresh_token',
         allowNull: true
     },
-    role_id: {
+    walletId: {
         type: DataTypes.UUID,
-        allowNull: true
+        allowNull: true,
+        field: 'wallet_id',
     },
+    roleId: {
+        type: DataTypes.STRING(10),
+        allowNull: true,
+        defaultValue: 'R01',
+        field: 'role_id',
+    },
+}, {
+    tableName: 'user',
+    timestamps: false
 });
 
-User.belongsTo(Wallet, {foreignKey: 'wallet_id', targetKey: 'id', as: 'wallet'})
-User.belongsTo(Role, {foreignKey: 'role_id', targetKey: 'id', as: 'role'})
+User.belongsTo(Wallet, {foreignKey: 'walletId', targetKey: 'id', as: 'wallet'})
+User.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'})
 
 module.exports = User;

@@ -11,12 +11,24 @@ const Message = sequelize.define("message", {
         primaryKey: true,
     },
     content: DataTypes.STRING(20),
-    created_at: DataTypes.TEXT,
-    conversation_id: DataTypes.UUID,
-    user_id: DataTypes.UUID,
+    createdAt: {
+        type: DataTypes.TEXT,
+        field: 'created_at',
+    },
+    conversationId: {
+        type: DataTypes.UUID,
+        field: 'conversation_id',
+    },
+    userId: {
+        type: DataTypes.UUID,
+        field: 'user_id',
+    },
+}, {
+    tableName: 'message',
+    timestamps: false
 });
 
-Message.belongsTo(Conversation, {foreignKey: 'conversation_id', targetKey: 'id', as: 'conversation'})
-Message.belongsTo(User, {foreignKey: 'user_id', targetKey: 'id', as: 'user'})
+Message.belongsTo(Conversation, {foreignKey: 'conversationId', targetKey: 'id', as: 'conversation'})
+Message.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
 
 module.exports = Message;
