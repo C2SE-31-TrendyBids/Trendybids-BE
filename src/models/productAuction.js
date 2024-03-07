@@ -17,7 +17,7 @@ const ProductAuction = sequelize.define("product_auction", {
     censor_id: DataTypes.UUID,
 });
 
-ProductAuction.belongsTo(Product, {foreignKey: 'category_id', targetKey: 'id', as: 'category'})
+ProductAuction.belongsTo(Product, {foreignKey: 'product_id', targetKey: 'id', as: 'product'})
 ProductAuction.belongsTo(Censor, {foreignKey: 'censor_id', targetKey: 'id', as: 'censor'})
 
 module.exports = ProductAuction;

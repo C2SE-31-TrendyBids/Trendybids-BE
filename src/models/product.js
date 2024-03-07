@@ -15,13 +15,12 @@ const Product = sequelize.define("product", {
     product_name: DataTypes.STRING(50),
     description: DataTypes.TEXT,
     starting_price: DataTypes.DECIMAL(10,2),
-    image_id: DataTypes.UUID,
     category_id: DataTypes.UUID,
     owner_product_id: DataTypes.UUID,
     censor_id: DataTypes.UUID,
 });
 
-Product.belongsTo(PrdImage, {foreignKey: 'image_id', targetKey: 'id', as: 'image'})
+Product.hasMany(PrdImage, {foreignKey: 'product_id', as: 'prdImages'})
 Product.belongsTo(Category, {foreignKey: 'category_id', targetKey: 'id', as: 'category'})
 Product.belongsTo(User, {foreignKey: 'owner_product_id', targetKey: 'id', as: 'owner'})
 Product.belongsTo(Censor, {foreignKey: 'censor_id', targetKey: 'id', as: 'censor'})
