@@ -5,7 +5,7 @@ const authService = require("../services/authService");
 class AuthController {
     async register(req, res) {
         try {
-            const {error} = validateRegister.validate(req.body);
+            const {error} = validateRegister(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -20,7 +20,7 @@ class AuthController {
 
     async verifyOTP(req, res) {
         try {
-            const {error} = validateVerify.validate(req.body);
+            const {error} = validateVerify(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -35,7 +35,7 @@ class AuthController {
 
     async login(req, res) {
         try {
-            const {error} = validateLogin.validate(req.body);
+            const {error} = validateLogin(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -50,7 +50,7 @@ class AuthController {
 
     async forgotPassword(req, res) {
         try {
-            const {error} = validateForgotPassword.validate(req.body);
+            const {error} = validateForgotPassword(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -65,7 +65,7 @@ class AuthController {
 
     async resetPassword(req, res) {
         try {
-            const {error} = validateResetPassword.validate(req.body);
+            const {error} = validateResetPassword(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
