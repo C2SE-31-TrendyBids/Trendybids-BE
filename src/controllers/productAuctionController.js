@@ -1,4 +1,4 @@
-const productAuctionServices = require("../services/product-auction")
+const productAuctionServices = require("../services/productAuctionService")
 
 
 class ProductAuctionController {
