@@ -8,7 +8,7 @@ const {Op} = require("sequelize");
 
 class ProductAuctionServices {
 
-    async getAll({page, limit, order, name, ...query}, res) {
+    async getAll({page, limit, order, description, categoryId, priceFrom, priceTo, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -23,10 +23,22 @@ class ProductAuctionServices {
             queries.offset = offset;
             queries.limit = limitNumber;
 
-
+            // handle config query
             if (order) queries.order = [order];
-            if (name) query.description = {[Op.substring]: name};
-            const {count, rows} = await ProductAuction.findAndCountAll({
+            // Commented out description query as it's not used
+            if (description) query.description = {[Op.substring]: description};
+
+            // Commented out categoryId query as it's already handled in productQuery
+            if (categoryId) {
+                query['$product.category.id$'] = categoryId;
+            }
+
+            const productQuery = {
+                ...(priceFrom !== undefined ? {startingPrice: {[Op.gte]: priceFrom}} : {}),
+                ...(priceTo !== undefined ? {startingPrice: {[Op.lte]: priceTo}} : {})
+            };
+
+            const response = await ProductAuction.findAll({
                 where: query,
                 ...queries,
                 attributes: {exclude: ['productId', 'censorId']},
@@ -35,6 +47,7 @@ class ProductAuctionServices {
                         model: Product,
                         as: 'product',
                         required: true,
+                        where: productQuery,
                         attributes: {exclude: ['censorId', 'createdAt', 'updatedAt', 'ownerProductId', "categoryId"]},
                         include: [
                             {
@@ -59,24 +72,17 @@ class ProductAuctionServices {
                         as: 'censor',
                         required: true,
                         attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
-                        include: [
-                            {
-                                model: User,
-                                as: 'user',
-                                required: true,
-                                attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken', 'status']}
-                            }
-                        ]
+
                     }
                 ]
             });
 
-            const totalPages = Math.ceil(count / limitNumber)
+            const totalPages = Math.ceil(response.length / limitNumber)
             return res.status(200).json({
                 message: "Get product auction successfully!",
-                totalItem: count,
+                totalItem: response.length,
                 totalPages: totalPages,
-                productAuctions: rows
+                productAuctions: response
             });
         } catch (err) {
             console.log(err);
