@@ -42,7 +42,7 @@ const validateAuctionProduct = (body) => {
         description: joi.string().required(),
         startingPrice: joi.number().required(),
         categoryId: joi.string().required(),
-        censorId: joi.string().required(),
+        censorId: joi.string(),
     }).validate(body)
 }
 

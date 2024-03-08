@@ -18,6 +18,7 @@ class AuthService {
                     email,
                     fullName,
                     password: hashPassword,
+                    roleId: "R01"
                 }
             })
 
@@ -82,7 +83,7 @@ class AuthService {
                     message: !user ? "Email hasn't been registered" : "User is not yet verified"
                 });
             }
-            const isChecked = user && bcrypt.compareSync(password, user.password);
+            const isChecked = (user && user.password !== null)  && bcrypt.compareSync(password, user.password);
             if (!isChecked) {
                 return res.status(401).json({
                     message: "Incorrect password"
