@@ -88,6 +88,31 @@ class AuthController {
             });
         }
     }
+
+    async refreshToken(req, res) {
+        try {
+            if (!req.body.refreshToken) {
+                return res.status(400).json({
+                    message: '\"refreshToken\" is required',
+                });
+            }
+            return authServices.refreshToken(req.body.refreshToken, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    async logout(req, res) {
+        try {
+            return authServices.logout(req.user?.id, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
 }
 
 module.exports = new AuthController;
