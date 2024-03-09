@@ -5,7 +5,6 @@ const User = require('../models/user');
 const sendEmail = require('../util/sendMail')
 const readFileTemplate = require('../helpers/readFileTemplate')
 const jwt = require("jsonwebtoken");
-const {response} = require("express");
 
 
 const cache = new NodeCache();

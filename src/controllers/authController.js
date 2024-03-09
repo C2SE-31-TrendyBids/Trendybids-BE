@@ -1,6 +1,5 @@
 const authServices = require("../services/authService")
 const {validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword} = require('../helpers/joiSchema')
-const authService = require("../services/authService");
 
 class AuthController {
     async register(req, res) {
