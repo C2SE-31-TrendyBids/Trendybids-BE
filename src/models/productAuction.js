@@ -1,7 +1,7 @@
 const sequelize = require("../util/database");
 const {DataTypes} = require("sequelize");
-const Censor = require("./censor");
 const Product = require("./product");
+const Censor = require("./censor");
 
 const ProductAuction = sequelize.define("product_auction", {
     id: {
@@ -32,9 +32,7 @@ const ProductAuction = sequelize.define("product_auction", {
     timestamps: false
 });
 
-
-ProductAuction.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id', as: 'product'})
-ProductAuction.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
-
+ProductAuction.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id', as: 'product'});
+ ProductAuction.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'});
 
 module.exports = ProductAuction;

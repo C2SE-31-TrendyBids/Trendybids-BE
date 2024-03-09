@@ -2,6 +2,7 @@ const sequelize = require("../util/database");
 const {DataTypes} = require("sequelize");
 const User = require("./user");
 const Role = require("./role");
+const ProductAuction = require("./productAuction");
 
 const Censor = sequelize.define("censor", {
     id: {
@@ -38,7 +39,8 @@ const Censor = sequelize.define("censor", {
     timestamps: false
 });
 
-Censor.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
-Censor.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'})
+// Censor.hasMany(ProductAuction, {foreignKey: 'censorId', as: 'product_auction'});
+Censor.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'});
+Censor.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'});
 
 module.exports = Censor;
