@@ -1,14 +1,14 @@
 const initRoles = [
     {
-        id: 'C01',
+        id: 'R01',
         name: 'User',
     },
     {
-        id: 'C02',
+        id: 'R02',
         name: 'Censor',
     },
     {
-        id: 'C03',
+        id: 'R03',
         name: 'Admin',
     },
 ];

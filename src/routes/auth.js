@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require('passport');
 const authController = require("../controllers/authController");
-const authServices = require("../services/authService");
-const authService = require("../services/authService");
+const {verifyToken} = require("../middlewares/verifyToken");
 
 router.post("/register", authController.register);
 
@@ -23,5 +22,9 @@ router.get("/google", passport.authenticate('google', {
 router.get('/google/callback',
     passport.authenticate('google', { session: false }), authController.loginSuccessGoogle
 );
+
+router.post("/refresh-token", authController.refreshToken);
+
+router.post("/logout", verifyToken, authController.logout);
 
 module.exports = router;
