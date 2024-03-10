@@ -75,6 +75,6 @@ module.exports = {
     validateForgotPassword,
     validateResetPassword,
     validateAuctionProduct,
-    validateUpdateProduct
+    validateUpdateProduct,
     validateRegisterCensor,
 }

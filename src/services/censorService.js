@@ -1,4 +1,3 @@
-const Censor = require("../models/censor");
 const { uploadFile, uploadMultipleFile } = require("../util/firebase.config");
 const { Op } = require("sequelize");
 const Censor = require("../models/censor");

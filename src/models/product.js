@@ -42,11 +42,8 @@ const Product = sequelize.define("product", {
     timestamps: false
 });
 
-<<<<<<< HEAD
-Product.hasMany(PrdImage, {foreignKey: 'productId', as: 'prdImage'})
-=======
+
 Product.hasMany(PrdImage, {foreignKey: 'productId', as: 'prdImages'})
->>>>>>> e07e9311b44784fd919409234ab929e275be623e
 Product.belongsTo(Category, {foreignKey: 'categoryId', targetKey: 'id', as: 'category'})
 Product.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner'})
 Product.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
