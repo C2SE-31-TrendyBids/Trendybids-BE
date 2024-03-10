@@ -9,11 +9,11 @@ const jwt = require("jsonwebtoken");
 
 const cache = new NodeCache();
 class AuthService {
-    async register({email, password, fullName}, res) {
+    async register({ email, password, fullName }, res) {
         try {
             const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
             const [user, created] = await User.findOrCreate({
-                where: {email},
+                where: { email },
                 defaults: {
                     email,
                     fullName,
@@ -21,14 +21,13 @@ class AuthService {
                     roleId: "R01"
                 }
             })
-
             // Generate OTP and send email verify
             const otp = crypto.randomInt(100000, 999999).toString();
             cache.set(`${user.id}-verify_otp`, otp, 300);
             await sendEmail({
                 email,
                 subject: "Verify your email address - TrendyBids",
-                html: readFileTemplate('verifyEmail.hbs',{otp: otp})
+                html: readFileTemplate('verifyEmail.hbs', { otp: otp })
             })
 
             const status = created ? 201 : 409;
@@ -40,7 +39,7 @@ class AuthService {
         }
     }
 
-    async verifyOTP({email, otp}, res) {
+    async verifyOTP({ email, otp }, res) {
         try {
             const user = await User.findOne({
                 where: { email },
@@ -73,24 +72,24 @@ class AuthService {
         }
     }
 
-    async login({email, password}, res) {
+    async login({ email, password }, res) {
         try {
             const user = await User.findOne({
-                where: {email}
+                where: { email }
             })
             if (!user || user.status === 'Pre-Active') {
                 return res.status(401).json({
                     message: !user ? "Email hasn't been registered" : "User is not yet verified"
                 });
             }
-            const isChecked = (user && user.password !== null)  && bcrypt.compareSync(password, user.password);
+            const isChecked = (user && user.password !== null) && bcrypt.compareSync(password, user.password);
             if (!isChecked) {
                 return res.status(401).json({
                     message: "Incorrect password"
                 })
             }
             const token = this.generateJwtToken(user.id, email)
-            if(token.refreshToken) {
+            if (token.refreshToken) {
                 user.refreshToken = token.refreshToken;
                 await user.save()
             }
@@ -104,7 +103,7 @@ class AuthService {
         }
     }
 
-    generateJwtToken(userId, email){
+    generateJwtToken(userId, email) {
         const jwtAt = jwt.sign(
             { id: userId, email },
             process.env.JWT_AT_SECRET,
@@ -121,10 +120,10 @@ class AuthService {
         }
     }
 
-    async forgotPassword({email}, res){
+    async forgotPassword({ email }, res) {
         try {
             const user = await User.findOne({
-                where: {email}
+                where: { email }
             })
             if (!user) {
                 return res.status(401).json({
@@ -138,7 +137,7 @@ class AuthService {
             await sendEmail({
                 email,
                 subject: "Request a new password reset - TrendyBids",
-                html: readFileTemplate('forgotPassword.hbs',{otp: otp, fullName: user.fullName})
+                html: readFileTemplate('forgotPassword.hbs', { otp: otp, fullName: user.fullName })
             })
 
             return res.status(200).json({
@@ -149,11 +148,11 @@ class AuthService {
         }
     }
 
-    async resetPassword({email, password, otp}, res){
+    async resetPassword({ email, password, otp }, res) {
         try {
             const hashPassword = bcrypt.hashSync(password, bcrypt.genSaltSync(8))
             const user = await User.findOne({
-                where: {email}
+                where: { email }
             })
             if (!user) {
                 return res.status(401).json({
@@ -174,58 +173,6 @@ class AuthService {
 
             return res.status(200).json({
                 message: 'Reset password successfully'
-            });
-        } catch (error) {
-            throw new Error(error)
-        }
-    }
-
-    async refreshToken(refreshToken, res) {
-        try {
-            let response, status;
-            const user = await User.findOne({
-                where: {refreshToken}
-            })
-            if (!user) {
-                return res.status(404).json({
-                    message: 'User is not found'
-                });
-            }
-
-            jwt.verify(refreshToken, process.env.JWT_RT_SECRET, (error) => {
-                if(error) {
-                    return res.status(401).json({
-                        message: "Refresh token has expired. Require login again",
-                    });
-                } else {
-                    const jwtAt = jwt.sign(
-                        { id: user.id, email: user.email },
-                        process.env.JWT_AT_SECRET,
-                        { expiresIn: "2d" }
-                    )
-                    status = jwtAt ? '200' : '400'
-                    response = {
-                        message: jwtAt ? 'Generate access token successfully' : "Fail to generate new access token. Let's try more time",
-                        accessToken: jwtAt ? jwtAt : null
-                    }
-                }
-            })
-
-            return res.status(status).json(response);
-        } catch (error) {
-            throw new Error(error)
-        }
-    }
-
-    async logout(userId, res) {
-        try {
-            await User.update({
-                refreshToken: null
-            }, {
-                where: {id: userId}
-            })
-            return res.status(200).json({
-                message: 'Logout successfully'
             });
         } catch (error) {
             throw new Error(error)

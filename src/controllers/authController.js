@@ -1,15 +1,15 @@
 const authServices = require("../services/authService")
-const {validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword} = require('../helpers/joiSchema')
+const { validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword } = require('../helpers/joiSchema')
 
 class AuthController {
     async register(req, res) {
         try {
-            const {error} = validateRegister(req.body);
+            const { error } = validateRegister(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
-            return authServices.register(req.body, res)
+            return authServices.register(req.body, req.file, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -19,7 +19,7 @@ class AuthController {
 
     async verifyOTP(req, res) {
         try {
-            const {error} = validateVerify(req.body);
+            const { error } = validateVerify(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -34,7 +34,7 @@ class AuthController {
 
     async login(req, res) {
         try {
-            const {error} = validateLogin(req.body);
+            const { error } = validateLogin(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -49,7 +49,7 @@ class AuthController {
 
     async forgotPassword(req, res) {
         try {
-            const {error} = validateForgotPassword(req.body);
+            const { error } = validateForgotPassword(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -64,7 +64,7 @@ class AuthController {
 
     async resetPassword(req, res) {
         try {
-            const {error} = validateResetPassword(req.body);
+            const { error } = validateResetPassword(req.body);
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -77,9 +77,9 @@ class AuthController {
         }
     }
 
-    async loginSuccessGoogle(req, res)  {
+    async loginSuccessGoogle(req, res) {
         try {
-            const {accessToken, refreshToken} = req.user
+            const { accessToken, refreshToken } = req.user
             res.redirect(`${process.env.CLIENT_URL}/login-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
         } catch (error) {
             return res.status(500).json({

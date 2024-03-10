@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
-const {verifyToken, isAdmin, isCensor} = require("../middlewares/verifyToken");
+const { verifyToken, isAdmin, isCensor } = require("../middlewares/verifyToken");
 const multer = require("multer");
 
 const upload = multer({ storage: multer.memoryStorage() })

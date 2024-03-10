@@ -1,11 +1,16 @@
 const auth = require("./auth");
 const user = require("./user");
+const productAuction = require("./productAuction");
+const product = require("./product");
 const admin = require('./admin')
 const censor = require('./censor')
 
 const initRoutes = (app) => {
   // Example
   app.use("/api/auth", auth);
+  app.use("/api/product-auctions", productAuction);
+  app.use("/api/products", product);
+  app.use("/api/censors", censor);
   app.use("/api/user", user);
   app.use("/api/admin", admin);
   app.use("/api/censor", censor);

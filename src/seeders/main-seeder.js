@@ -1,11 +1,29 @@
 const Role = require('../models/role');
 const Category = require('../models/category');
-const {initRoles, initCategories} = require('./data');
+const User = require('../models/user');
+const Censor = require('../models/censor');
+const Product = require('../models/product');
+const PrdImage = require('../models/prdImage');
+const ProductAuction = require('../models/productAuction');
+const {
+    initRoles,
+    initCategories,
+    initUsers,
+    initCensors,
+    initProducts,
+    initPrdImages,
+    initProductAuctions
+} = require('./data');
 
-const run = () => {
+const run = async () => {
     return Promise.all([
-        Role.bulkCreate(initRoles),
-        Category.bulkCreate(initCategories)
+        await Role.bulkCreate(initRoles),
+        await Category.bulkCreate(initCategories),
+        await User.bulkCreate(initUsers),
+        await Censor.bulkCreate(initCensors),
+        await Product.bulkCreate(initProducts),
+        await PrdImage.bulkCreate(initPrdImages),
+        await ProductAuction.bulkCreate(initProductAuctions),
     ]);
 }
 
