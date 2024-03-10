@@ -1,7 +1,6 @@
 const authServices = require("../services/authService")
 const { validateRegister, validateVerify, validateLogin, validateForgotPassword, validateResetPassword } = require('../helpers/joiSchema')
 
-
 class AuthController {
     async register(req, res) {
         try {
@@ -82,6 +81,31 @@ class AuthController {
         try {
             const { accessToken, refreshToken } = req.user
             res.redirect(`${process.env.CLIENT_URL}/login-success?accessToken=${accessToken}&refreshToken=${refreshToken}`);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    async refreshToken(req, res) {
+        try {
+            if (!req.body.refreshToken) {
+                return res.status(400).json({
+                    message: '\"refreshToken\" is required',
+                });
+            }
+            return authServices.refreshToken(req.body.refreshToken, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    async logout(req, res) {
+        try {
+            return authServices.logout(req.user?.id, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
