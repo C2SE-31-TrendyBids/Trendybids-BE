@@ -16,6 +16,7 @@ passport.use(
                     email: profile.emails[0]?.value,
                     fullName: profile?.displayName,
                     avatarUrl: profile?.photos[0]?.value,
+                    roleId: "R01",
                     status: 'Active'
                 }
             })

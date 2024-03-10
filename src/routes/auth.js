@@ -3,7 +3,6 @@ const router = express.Router();
 const passport = require('passport');
 const authController = require("../controllers/authController");
 
-
 router.post("/register", authController.register);
 
 router.post("/verify-email", authController.verifyOTP);

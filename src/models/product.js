@@ -21,10 +21,6 @@ const Product = sequelize.define("product", {
         type: DataTypes.DECIMAL(10, 2),
         field: 'starting_price',
     },
-    imageId: {
-        type: DataTypes.UUID,
-        field: 'image_id',
-    },
     categoryId: {
         type: DataTypes.STRING(10),
         field: 'category_id',
@@ -37,12 +33,16 @@ const Product = sequelize.define("product", {
         type: DataTypes.UUID,
         field: 'censor_id',
     },
+    status: {
+        type: DataTypes.ENUM('Processing', 'Verified', 'Rejected'),
+        defaultValue: 'Processing',
+    },
 }, {
     tableName: 'product',
     timestamps: false
 });
 
-Product.belongsTo(PrdImage, {foreignKey: 'imageId', targetKey: 'id', as: 'image'})
+Product.hasMany(PrdImage, {foreignKey: 'productId', as: 'prdImage'})
 Product.belongsTo(Category, {foreignKey: 'categoryId', targetKey: 'id', as: 'category'})
 Product.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner'})
 Product.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
