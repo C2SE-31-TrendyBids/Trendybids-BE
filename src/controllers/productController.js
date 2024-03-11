@@ -6,7 +6,7 @@ class ProductController {
 
     async getProductByQuery(req, res) {
         try {
-            return await productServices.getAll(req.query, res);
+            return await productServices.getAll(req?.user?.id, req?.user?.role, req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

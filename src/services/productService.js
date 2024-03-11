@@ -9,7 +9,7 @@ const prdImage = require("../models/prdImage");
 
 class ProductServices {
 
-    async getAll({page, limit, order, productName, categoryId, priceFrom, priceTo, ...query}, res) {
+    async getAll(userId, role, {page, limit, order, productName, categoryId, priceFrom, priceTo, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -26,8 +26,9 @@ class ProductServices {
 
             // handle config query
             if (order) queries.order = [order];
-
+            const roleCensor = "R02"
             const productQuery = {
+                ...(role?.dataValues?.id === roleCensor ? {censorId: userId} : {ownerProductId: userId}),
                 ...(productName ? {productName: {[Op.substring]: productName}} : {}),
                 ...(categoryId ? {categoryId: categoryId} : {}),
                 ...(priceFrom !== undefined ? {startingPrice: {[Op.gte]: priceFrom}} : {}),
@@ -35,7 +36,7 @@ class ProductServices {
                 ...query
             };
 
-            const response = await Product.findAll({
+            const {count, rows} = await Product.findAndCountAll({
                     where: productQuery,
                     ...queries,
                     attributes: {exclude: ['censorId', 'createdAt', 'updatedAt', 'ownerProductId', "categoryId"]},
@@ -63,22 +64,21 @@ class ProductServices {
 
                         }
                     ],
+                    distinct: true
                 },
             );
 
-            const totalPages = Math.ceil(response.length / limitNumber)
+            const totalPages = Math.ceil(count / limitNumber)
             return res.status(200).json({
                 message: "Get products successfully!",
-                totalItem: response.length,
+                totalItem: count,
                 totalPages: totalPages,
-                products: response
+                products: rows
             });
         } catch (err) {
             console.log(err);
             throw new Error(err)
         }
-
-
     }
 
     async postAuctionProduct(userId, body, fileImages, res) {
@@ -156,10 +156,10 @@ class ProductServices {
 
             const [product, image, imgs] = await Promise.all([
                 Product.destroy({
-                    where: { id: productId, ownerProductId: userId },
+                    where: {id: productId, ownerProductId: userId},
                 }),
                 prdImage.destroy({
-                    where: { productId },
+                    where: {productId},
                 }),
                 deleteMultipleFile(listImageId, "product")
             ])

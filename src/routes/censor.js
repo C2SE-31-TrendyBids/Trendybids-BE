@@ -8,7 +8,8 @@ const censorController = require('../controllers/censorController')
 
 const upload = multer({ storage: multer.memoryStorage() });
 router.post("/register-censor", upload.single('avatar'), censorController.registerCensor);
-router.get("/get-all", censorControllers.getCensorByQuery);
+router.get("/get-auction-session", censorControllers.getAuctionByQuery);
+router.get("/get-censor", censorControllers.getCensorByQuery);
 router.use(verifyToken)
 router.use(isCensor)
 router.post('/approve-auction-product', censorController.approveAuctionProduct)
