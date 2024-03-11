@@ -73,13 +73,13 @@ class CensorService {
                     where: censorQuery,
                     ...queries,
                     attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
-                    // include: [
-                    //     {
-                    //         model: ProductAuction,
-                    //         as: "productAuctions",
-                    //         attributes: { exclude: ['productId', 'censorId'] },
-                    //     }
-                    // ]
+                    include: [
+                        {
+                            model: ProductAuction,
+                            as: "productAuctions",
+                            attributes: { exclude: ['productId', 'censorId'] },
+                        }
+                    ]
                 },
             );
 
