@@ -23,5 +23,6 @@ const PrdImage = sequelize.define("prd_image", {
     timestamps: false
 });
 
+//PrdImage.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 
 module.exports = PrdImage;

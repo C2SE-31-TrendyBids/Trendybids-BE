@@ -58,6 +58,16 @@ const validateAuctionProduct = (body) => {
     }).validate(body)
 }
 
+const validateUpdateProduct = (body) => {
+    return joi.object({
+        productName: joi.string(),
+        description: joi.string(),
+        startingPrice: joi.number(),
+        categoryId: joi.string(),
+        censorId: joi.string(),
+    }).validate(body)
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -65,6 +75,6 @@ module.exports = {
     validateForgotPassword,
     validateResetPassword,
     validateAuctionProduct,
+    validateUpdateProduct,
     validateRegisterCensor,
-    validateAuctionProduct
 }

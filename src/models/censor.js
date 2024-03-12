@@ -35,11 +35,11 @@ const Censor = sequelize.define("censor", {
     taxCodeIssuanceDate: DataTypes.DATE,
     position: DataTypes.STRING,
     placeTaxCode: DataTypes.STRING,
-
 }, {
     tableName: 'censor',
     timestamps: false
 });
+
 
 // Censor.hasMany(ProductAuction, {foreignKey: 'censorId', as: 'product_auction'});
 Censor.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' });
