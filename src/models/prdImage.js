@@ -1,5 +1,5 @@
 const sequelize = require("../util/database");
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const Product = require("./product");
 
 
@@ -23,9 +23,5 @@ const PrdImage = sequelize.define("prd_image", {
     timestamps: false
 });
 
-<<<<<<< HEAD
-//PrdImage.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
-=======
->>>>>>> e07e9311b44784fd919409234ab929e275be623e
 
 module.exports = PrdImage;
