@@ -66,7 +66,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
         password: faker.internet.password(),
         phoneNumber: faker.number.int(10, 11),
         avatarUrl: faker.image.avatar(),
-        address: faker.address.streetAddress(),
+        address: faker.location.streetAddress(),
         refreshToken: faker.string.uuid(),
         roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
     };
@@ -80,7 +80,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
         phoneNumber: faker.number.int(10, 11),
         avatarUrl: faker.image.avatar(),
         founding: faker.date.past().toISOString().slice(0, 10),
-        address: faker.address.streetAddress(),
+        address: faker.location.streetAddress(),
         userId: initUsers[Math.floor(Math.random() * initUsers.length)].id,
         roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
     };
@@ -103,7 +103,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
 for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     const newPrdImage = {
         id: faker.string.uuid(),
-        prdImageURL: faker.image.imageUrl(),
+        prdImageURL: faker.image.url(),
         productId: initProducts[Math.floor(Math.random() * initProducts.length)].id
     };
     initPrdImages.push(newPrdImage);
@@ -112,6 +112,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
 for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     const newProductAuction = {
         id: faker.string.uuid(),
+        title: faker.lorem.word(),
         description: faker.lorem.sentence(),
         startTime: faker.date.past(),
         numberOfParticipation: Math.floor(Math.random() * 20),

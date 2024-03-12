@@ -77,7 +77,7 @@ class CensorService {
                         {
                             model: ProductAuction,
                             as: "productAuctions",
-                            attributes: { exclude: ['productId', 'censorId'] },
+                            attributes: {exclude: ['productId', 'censorId']},
                         }
                     ]
                 },
@@ -98,7 +98,7 @@ class CensorService {
 
     }
 
-    async getAuction({page, limit, order, description, categoryId, priceFrom, priceTo, ...query}, res) {
+    async getAuction({page, limit, order, productName, categoryId, upComing, priceFrom, priceTo, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -115,17 +115,15 @@ class CensorService {
 
             // handle config query
             if (order) queries.order = [order];
-            // Commented out description query as it's not used
-            if (description) query.description = {[Op.substring]: description};
 
             // Commented out categoryId query as it's already handled in productQuery
             if (categoryId) {
                 query['$product.category.id$'] = categoryId;
             }
-
             const productQuery = {
+                ...(productName !== undefined ? {productName: {[Op.substring]: productName}} : {}),
                 ...(priceFrom !== undefined ? {startingPrice: {[Op.gte]: priceFrom}} : {}),
-                ...(priceTo !== undefined ? {startingPrice: {[Op.lte]: priceTo}} : {})
+                ...(priceTo !== undefined ? {startingPrice: {[Op.lte]: priceTo}} : {}),
             };
 
             const {count, rows} = await ProductAuction.findAndCountAll({
@@ -138,7 +136,7 @@ class CensorService {
                         as: 'product',
                         required: true,
                         where: productQuery,
-                        attributes: {exclude: ['censorId', 'createdAt', 'updatedAt', 'ownerProductId', "categoryId"]},
+                        attributes: {exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"]},
                         include: [
                             {
                                 model: User,
