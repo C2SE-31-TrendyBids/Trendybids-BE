@@ -7,7 +7,7 @@ const censor = require('./censor')
 const initRoutes = (app) => {
   // Example
   app.use("/api/auth", auth);
-  app.use("/api/products", product);
+  app.use("/api/product", product);
   app.use("/api/censor", censor);
   app.use("/api/user", user);
   app.use("/api/admin", admin);
