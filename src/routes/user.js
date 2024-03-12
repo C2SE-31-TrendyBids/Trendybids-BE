@@ -5,6 +5,7 @@ const {verifyToken} = require("../middlewares/verifyToken");
 
 router.use(verifyToken)
 router.get("/me", verifyToken, userController.getCurrentUser);
+router.post('/join-auction-session', userController.joinAuctionSession)
 
 
 module.exports = router;

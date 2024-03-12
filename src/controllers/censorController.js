@@ -67,7 +67,7 @@ class CensorController {
                     message: error.details[0].message,
                 });
             }
-            return censorServices.postAuctionSession(req.user.id, req.body, res);
+            return censorServices.postAuctionSession(req.body, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
