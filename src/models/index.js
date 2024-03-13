@@ -1,7 +1,6 @@
 require('./user')
 require('./role')
 require('./wallet')
-require('./auctionSession')
 require('./auctionNotifications')
 require('./category')
 require('./censor')

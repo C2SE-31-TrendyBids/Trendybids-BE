@@ -12,8 +12,6 @@ const initRoutes = (app) => {
   app.use("/api/censor", censor);
   app.use("/api/user", user);
   app.use("/api/admin", admin);
-  app.use("/api/category", category);
-
   app.use((req, res) => {
     res.status(200).json({
       message: "Hello world!",
