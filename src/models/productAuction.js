@@ -23,19 +23,25 @@ const ProductAuction = sequelize.define("product_auction", {
     numberOfParticipation: {
         type: DataTypes.INTEGER,
         field: 'number_of_participation',
+        defaultValue: 0
     },
     highestPrice: {
         type: DataTypes.DECIMAL(10, 2),
         field: 'highest_price',
+        defaultValue: 0
     },
     highestBidder: {
         type: DataTypes.UUID,
         field: 'highest_bidder',
     },
-    status: DataTypes.ENUM('ongoing', 'ended', 'cancelled', 'not_started'),
+    status: {
+        type: DataTypes.ENUM('ongoing', 'ended', 'cancelled', 'not_started'),
+        defaultValue: 'not_started'
+    },
     totalNumberAuction: {
         type: DataTypes.INTEGER,
         field: 'total_number_auction',
+        defaultValue: 0
     },
     productId: {
         type: DataTypes.UUID,
@@ -52,8 +58,7 @@ const ProductAuction = sequelize.define("product_auction", {
     updatedAt: false
 });
 
-ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
 ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as: 'product' });
-// ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
+ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
 
 module.exports = ProductAuction;
