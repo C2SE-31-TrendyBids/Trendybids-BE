@@ -7,6 +7,7 @@ const MemberOrganization = require('../models/memberOrganization')
 const User = require("../models/user");
 const PrdImage = require("../models/prdImage");
 const Category = require("../models/category");
+const Wallet = require("../models/wallet");
 
 class CensorService {
     async register({
@@ -46,59 +47,46 @@ class CensorService {
         }
     }
 
-    async getCensors({page, limit, order, censorName, ...query}, res) {
+    async getCensors({page, limit, order, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
-
             // If pageNumber is less than 1, set it to 1
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             // Calculate the offset
             const offset = (pageNumber - 1) * limitNumber;
-
             queries.offset = offset;
             queries.limit = limitNumber;
-
             // handle config query
             if (order) queries.order = [order];
-
+            // order of product
             const censorQuery = {
-                ...(censorName ? {productName: {[Op.substring]: censorName}} : {}),
                 ...query
             };
 
-            const response = await Censor.findAll({
+            const {count, rows} = await Censor.findAndCountAll({
                     where: censorQuery,
                     ...queries,
                     attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
-                    include: [
-                        {
-                            model: ProductAuction,
-                            as: "productAuctions",
-                            attributes: {exclude: ['productId', 'censorId']},
-                        }
-                    ]
+                    distinct: true
                 },
             );
-
-            const totalPages = Math.ceil(response.length / limitNumber)
+            const totalPages = Math.ceil(count / limitNumber)
             return res.status(200).json({
                 message: "Get products successfully!",
-                totalItem: response.length,
+                totalItem: count,
                 totalPages: totalPages,
-                censors: response
+                censors: rows
             });
         } catch (err) {
             console.log(err);
             throw new Error(err)
         }
-
-
     }
 
-    async getAuction({page, limit, order, productName, categoryId, upComing, priceFrom, priceTo, ...query}, res) {
+    async getAuctions({page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -109,13 +97,23 @@ class CensorService {
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             // Calculate the offset
             const offset = (pageNumber - 1) * limitNumber;
-
             queries.offset = offset;
             queries.limit = limitNumber;
-
             // handle config query
             if (order) queries.order = [order];
-
+            // Order product by startingPrice if specified
+            const queriesProduct = {raw: false, nest: true}
+            if (orderProduct === 'price_ASC') {
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'ASC']];
+            } else if (orderProduct === 'price_DESC') {
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'DESC']];
+            }
+            // Add a sort condition by product name if specified
+            if (orderProduct === 'productName_ASC') {
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'ASC']];
+            } else if (orderProduct === 'productName_DESC') {
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'DESC']];
+            }
             // Commented out categoryId query as it's already handled in productQuery
             if (categoryId) {
                 query['$product.category.id$'] = categoryId;
@@ -130,6 +128,7 @@ class CensorService {
                 where: query,
                 ...queries,
                 attributes: {exclude: ['productId', 'censorId']},
+                subQuery: false,
                 include: [
                     {
                         model: Product,
@@ -177,8 +176,48 @@ class CensorService {
             console.log(err);
             throw new Error(err)
         }
+    }
 
+    async getCurrentCensor(userId, {page, limit, order, ...query}, res) {
+        try {
+            const queries = {raw: false, nest: true};
+            // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
+            let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
+            const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
+            // If pageNumber is less than 1, set it to 1
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            // Calculate the offset
+            const offset = (pageNumber - 1) * limitNumber;
+            queries.offset = offset;
+            queries.limit = limitNumber;
+            // handle config query
+            if (order) queries.order = [order];
+            // query of product
+            const queryCensor = {
+                userId,
+                ...query
+            };
+            const response = await Censor.findAll({
+                where: queryCensor,
+                ...queries,
+                attributes: {exclude: ['roleId', 'createdAt', 'updatedAt', "userId", "walletId"]},
+                include: [
+                    {
+                        model: Wallet,
+                        as: 'wallet',
+                        required: true,
+                    }
+                ],
+            });
 
+            return res.status(200).json({
+                message: "Get current censor successfully!",
+                censors: response
+            });
+        } catch (err) {
+            console.log(err);
+            throw new Error(err)
+        }
     }
 
     async approveAuctionProduct(userId, productId, res) {

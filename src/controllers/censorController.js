@@ -33,9 +33,19 @@ class CensorController {
         }
     }
 
+    async getCurrentCensor(req, res) {
+        try {
+            return await censorServices.getCurrentCensor(req?.user?.id,req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
     async getAuctionByQuery(req, res) {
         try {
-            return await censorServices.getAuction(req.query, res);
+            return await censorServices.getAuctions(req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

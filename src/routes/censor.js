@@ -13,5 +13,6 @@ router.get("/get-censor", censorControllers.getCensorByQuery);
 router.use(verifyToken)
 router.use(isCensor)
 router.post('/approve-auction-product', censorController.approveAuctionProduct)
+router.get('/me', censorController.getCurrentCensor)
 
 module.exports = router
