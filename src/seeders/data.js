@@ -1,5 +1,5 @@
-const {faker} = require('@faker-js/faker');
-const {v4: uuidv4} = require('sequelize');
+const { faker } = require('@faker-js/faker');
+const { v4: uuidv4 } = require('sequelize');
 const initRoles = [
     {
         id: 'R01',

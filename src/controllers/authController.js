@@ -9,7 +9,7 @@ class AuthController {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
-            return authServices.register(req.body, req.file, res)
+            return authServices.register(req.body, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

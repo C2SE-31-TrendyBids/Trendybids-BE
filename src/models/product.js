@@ -1,5 +1,5 @@
 const sequelize = require("../util/database");
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const User = require("./user");
 const PrdImage = require("./prdImage");
 const Censor = require("./censor");
@@ -48,4 +48,5 @@ Product.belongsTo(Category, {foreignKey: 'categoryId', targetKey: 'id', as: 'cat
 Product.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner'})
 Product.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
 ProductAuction.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id', as: 'product'});
+
 module.exports = Product;

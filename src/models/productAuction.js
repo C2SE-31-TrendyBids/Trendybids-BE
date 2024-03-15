@@ -1,5 +1,5 @@
 const sequelize = require("../util/database");
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const Product = require("./product");
 
 const ProductAuction = sequelize.define("product_auction", {
@@ -22,19 +22,25 @@ const ProductAuction = sequelize.define("product_auction", {
     numberOfParticipation: {
         type: DataTypes.INTEGER,
         field: 'number_of_participation',
+        defaultValue: 0
     },
     highestPrice: {
         type: DataTypes.DECIMAL(10, 2),
         field: 'highest_price',
+        defaultValue: 0
     },
     highestBidder: {
         type: DataTypes.UUID,
         field: 'highest_bidder',
     },
-    status: DataTypes.ENUM('ongoing', 'ended', 'cancelled', 'not_started'),
+    status: {
+        type: DataTypes.ENUM('ongoing', 'ended', 'cancelled', 'not_started'),
+        defaultValue: 'not_started'
+    },
     totalNumberAuction: {
         type: DataTypes.INTEGER,
         field: 'total_number_auction',
+        defaultValue: 0
     },
     productId: {
         type: DataTypes.UUID,

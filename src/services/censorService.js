@@ -8,6 +8,7 @@ const User = require("../models/user");
 const PrdImage = require("../models/prdImage");
 const Category = require("../models/category");
 const Wallet = require("../models/wallet");
+const moment = require('moment');
 
 class CensorService {
     async register({
@@ -47,6 +48,7 @@ class CensorService {
         }
     }
 
+
     async getCensors({page, limit, order, ...query}, res) {
         try {
             const queries = {raw: false, nest: true};
@@ -67,12 +69,12 @@ class CensorService {
             };
 
             const {count, rows} = await Censor.findAndCountAll({
-                    where: censorQuery,
-                    ...queries,
-                    attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
-                    distinct: true
-                },
-            );
+                where: censorQuery,
+                ...queries,
+                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+                distinct: true,
+            })
+
             const totalPages = Math.ceil(count / limitNumber)
             return res.status(200).json({
                 message: "Get products successfully!",
@@ -85,6 +87,7 @@ class CensorService {
             throw new Error(err)
         }
     }
+
 
     async getAuctions({page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query}, res) {
         try {
@@ -248,6 +251,63 @@ class CensorService {
 
             return res.status(200).json({
                 message: "Approve auction product successfully"
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    async postAuctionSession(body, res) {
+        try {
+            const startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
+            const endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
+
+            const auctionSession = await ProductAuction.create({
+                title: body.title,
+                description: body.description,
+                startTime,
+                endTime,
+                productId: body.productId,
+                censorId: body.censorId,
+            })
+
+            return res.status(200).json({
+                message: "Post auction successfully",
+                data: auctionSession
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    async updateAuctionSession(sessionId, body, res) {
+        try {
+            if (body.startTime) body.startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
+            if (body.endTime) body.endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
+
+            const auctionSession = await ProductAuction.update({
+                ...body
+            }, {
+                where: {id: sessionId}
+            })
+
+            const status = auctionSession[0] === 1 ? 200 : 404;
+            return res.status(status).json({
+                message: auctionSession[0] === 1 ? "Post auction successfully" : "Has error when post auction",
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    async deleteAuctionSession(sessionId, res) {
+        try {
+            const auctionSession = await ProductAuction.destroy({
+                where: {id: sessionId}
+            })
+            const status = auctionSession > 0 ? 200 : 404;
+            return res.status(status).json({
+                message: auctionSession > 0 ? "Auction session is deleted" : "Has error when delete auction session",
             })
         } catch (error) {
             throw new Error(error)

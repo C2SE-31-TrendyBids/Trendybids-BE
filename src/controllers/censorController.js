@@ -1,5 +1,5 @@
 const censorServices = require('../services/censorService');
-const { validateRegisterCensor } = require('../helpers/joiSchema');
+const { validateRegisterCensor, validateAuctionSession } = require('../helpers/joiSchema');
 
 class CensorController {
     async registerCensor(req, res) {
@@ -56,7 +56,7 @@ class CensorController {
     approveAuctionProduct(req, res) {
         try {
             const productId = req.body.productId
-            if (!productId) {
+            if (productId === ":productId") {
                 return res.status(400).json({
                     message: '\"productId\" is required',
                 });
@@ -65,6 +65,65 @@ class CensorController {
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
+            });
+        }
+    }
+
+    postAuctionSession(req, res) {
+        try {
+            const { error } = validateAuctionSession(req.body, "post");
+            if (error) {
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            }
+            return censorServices.postAuctionSession(req.body, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+    updateAuctionSession(req, res) {
+        try {
+            const { error } = validateAuctionSession(req.body, "update");
+            const sessionId = req.params.sessionId;
+
+            if (sessionId === ":sessionId") {
+                return res.status(400).json({
+                    message: '\"sessionId\" is required',
+                });
+            }
+            if (error) {
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            }
+
+            return censorServices.updateAuctionSession(sessionId, req.body, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+    deleteAuctionSession(req, res) {
+        try {
+            const sessionId = req.params.sessionId;
+            if (sessionId === ":sessionId") {
+                return res.status(400).json({
+                    message: '\"sessionId\" is required',
+                });
+            }
+            return censorServices.deleteAuctionSession(sessionId, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
             });
         }
     }

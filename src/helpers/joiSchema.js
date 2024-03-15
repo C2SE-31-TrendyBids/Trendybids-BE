@@ -68,6 +68,26 @@ const validateUpdateProduct = (body) => {
     }).validate(body)
 }
 
+const validateAuctionSession = (body, type = "post") => {
+    if (type === 'post') {
+        return joi.object({
+            title: joi.string().required(),
+            description: joi.string().required(),
+            startTime: joi.string().required(),
+            endTime: joi.string().required(),
+            productId: joi.string().required(),
+            censorId: joi.string().required(),
+        }).validate(body)
+    } else {
+        return joi.object({
+            title: joi.string(),
+            description: joi.string(),
+            startTime: joi.string(),
+            endTime: joi.string(),
+        }).validate(body)
+    }
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -77,4 +97,5 @@ module.exports = {
     validateAuctionProduct,
     validateUpdateProduct,
     validateRegisterCensor,
+    validateAuctionSession
 }
