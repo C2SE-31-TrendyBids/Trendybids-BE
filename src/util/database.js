@@ -1,4 +1,4 @@
-const {Sequelize} = require("sequelize");
+const { Sequelize } = require("sequelize");
 require('dotenv').config();
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
@@ -25,7 +25,7 @@ const connectionDatabase = async () => {
 };
 
 connectionDatabase().then(() => {
-    sequelize.sync({alter: true}).then(() => {
+    sequelize.sync({ alter: true }).then(() => {
         console.log("Sync table successfully")
     }).catch((error) => {
         console.log(error)

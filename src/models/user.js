@@ -1,7 +1,7 @@
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../util/database");
 const Role = require('./role')
-const Wallet = require('./wallet')
+const Wallet = require('./wallet');
 
 const User = sequelize.define("user", {
     id: {
@@ -56,7 +56,7 @@ const User = sequelize.define("user", {
     timestamps: false
 });
 
-User.belongsTo(Wallet, {foreignKey: 'walletId', targetKey: 'id', as: 'wallet'})
-User.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'})
+User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
+User.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' })
 
 module.exports = User;

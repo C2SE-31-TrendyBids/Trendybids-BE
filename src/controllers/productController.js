@@ -1,11 +1,15 @@
 const productServices = require("../services/productService")
-const {validateAuctionProduct, validateUpdateProduct} = require("../helpers/joiSchema");
+const { validateAuctionProduct, validateUpdateProduct } = require("../helpers/joiSchema");
 
 
 class ProductController {
 
     async getProductByQuery(req, res) {
+        console.log(req?.user?.id);
+        console.log(req?.user?.role);
+        console.log(req.query);
         try {
+
             return await productServices.getAll(req?.user?.id, req?.user?.role, req.query, res);
         } catch (error) {
             return res.status(500).json({
@@ -16,7 +20,7 @@ class ProductController {
 
     async postAuctionProduct(req, res) {
         try {
-            const {error} = validateAuctionProduct(req.body)
+            const { error } = validateAuctionProduct(req.body)
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -38,7 +42,7 @@ class ProductController {
     async updateAuctionProduct(req, res) {
         try {
             const productId = req.params.productId
-            const {error} = validateUpdateProduct(req.body)
+            const { error } = validateUpdateProduct(req.body)
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,

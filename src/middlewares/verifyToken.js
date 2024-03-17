@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Role = require("../models/role");
+const MemberOrganization = require("../models/memberOrganization");
 
 const verifyToken = (req, res, next) => {
     const token = req.headers.authorization;
@@ -35,7 +36,12 @@ const verifyToken = (req, res, next) => {
             include: [
                 { model: Role, attributes: ["id", "name"], as: 'role' },
             ]
+
         });
+        req.memberOrganization = await MemberOrganization.findOne({
+            where: { userId: decode.id },
+        })
+
         next();
     });
 };

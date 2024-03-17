@@ -1,5 +1,5 @@
-const {uploadFile, uploadMultipleFile} = require("../util/firebase.config");
-const {Op} = require("sequelize");
+const { uploadFile, uploadMultipleFile } = require("../util/firebase.config");
+const { Op } = require("sequelize");
 const Censor = require("../models/censor");
 const ProductAuction = require("../models/productAuction");
 const Product = require('../models/product')
@@ -12,20 +12,20 @@ const moment = require('moment');
 
 class CensorService {
     async register({
-                       name,
-                       phoneNumber,
-                       founding,
-                       address,
-                       companyTaxCode,
-                       taxCodeIssuanceDate,
-                       position,
-                       placeTaxCode
-                   }, avatar, res) {
+        name,
+        phoneNumber,
+        founding,
+        address,
+        companyTaxCode,
+        taxCodeIssuanceDate,
+        position,
+        placeTaxCode
+    }, avatar, res) {
         try {
             const uploadAvatar = await uploadFile(avatar, 'avatar')
             const avatarUrl = uploadAvatar.url
             const [censor, created] = await Censor.findOrCreate({
-                where: {phoneNumber},
+                where: { phoneNumber },
                 defaults: {
                     name,
                     phoneNumber,
@@ -49,9 +49,9 @@ class CensorService {
     }
 
 
-    async getCensors({page, limit, order, ...query}, res) {
+    async getCensors({ page, limit, order, ...query }, res) {
         try {
-            const queries = {raw: false, nest: true};
+            const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -68,10 +68,10 @@ class CensorService {
                 ...query
             };
 
-            const {count, rows} = await Censor.findAndCountAll({
+            const { count, rows } = await Censor.findAndCountAll({
                 where: censorQuery,
                 ...queries,
-                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+                attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
                 distinct: true,
             })
 
@@ -89,9 +89,9 @@ class CensorService {
     }
 
 
-    async getAuctions({page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query}, res) {
+    async getAuctions({ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
         try {
-            const queries = {raw: false, nest: true};
+            const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -105,32 +105,32 @@ class CensorService {
             // handle config query
             if (order) queries.order = [order];
             // Order product by startingPrice if specified
-            const queriesProduct = {raw: false, nest: true}
+            const queriesProduct = { raw: false, nest: true }
             if (orderProduct === 'price_ASC') {
-                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'ASC']];
+                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'ASC']];
             } else if (orderProduct === 'price_DESC') {
-                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'DESC']];
+                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'DESC']];
             }
             // Add a sort condition by product name if specified
             if (orderProduct === 'productName_ASC') {
-                queries.order = [[{model: Product, as: 'product'}, 'productName', 'ASC']];
+                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'ASC']];
             } else if (orderProduct === 'productName_DESC') {
-                queries.order = [[{model: Product, as: 'product'}, 'productName', 'DESC']];
+                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'DESC']];
             }
             // Commented out categoryId query as it's already handled in productQuery
             if (categoryId) {
                 query['$product.category.id$'] = categoryId;
             }
             const productQuery = {
-                ...(productName !== undefined ? {productName: {[Op.substring]: productName}} : {}),
-                ...(priceFrom !== undefined ? {startingPrice: {[Op.gte]: priceFrom}} : {}),
-                ...(priceTo !== undefined ? {startingPrice: {[Op.lte]: priceTo}} : {}),
+                ...(productName !== undefined ? { productName: { [Op.substring]: productName } } : {}),
+                ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
+                ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
             };
 
-            const {count, rows} = await ProductAuction.findAndCountAll({
+            const { count, rows } = await ProductAuction.findAndCountAll({
                 where: query,
                 ...queries,
-                attributes: {exclude: ['productId', 'censorId']},
+                attributes: { exclude: ['productId', 'censorId'] },
                 subQuery: false,
                 include: [
                     {
@@ -138,17 +138,17 @@ class CensorService {
                         as: 'product',
                         required: true,
                         where: productQuery,
-                        attributes: {exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"]},
+                        attributes: { exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"] },
                         include: [
                             {
                                 model: User,
                                 as: 'owner',
                                 required: true,
-                                attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken']}
+                                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
                             }, {
                                 model: PrdImage,
                                 as: 'prdImages',
-                                attributes: {exclude: ['productId']}
+                                attributes: { exclude: ['productId'] }
                             },
                             {
                                 model: Category,
@@ -161,7 +161,7 @@ class CensorService {
                         model: Censor,
                         as: 'censor',
                         required: true,
-                        attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+                        attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
 
                     }
                 ],
@@ -181,9 +181,9 @@ class CensorService {
         }
     }
 
-    async getCurrentCensor(userId, {page, limit, order, ...query}, res) {
+    async getCurrentCensor(userId, { page, limit, order, ...query }, res) {
         try {
-            const queries = {raw: false, nest: true};
+            const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -203,7 +203,7 @@ class CensorService {
             const response = await Censor.findAll({
                 where: queryCensor,
                 ...queries,
-                attributes: {exclude: ['roleId', 'createdAt', 'updatedAt', "userId", "walletId"]},
+                attributes: { exclude: ['roleId', 'createdAt', 'updatedAt', "userId", "walletId"] },
                 include: [
                     {
                         model: Wallet,
@@ -227,22 +227,22 @@ class CensorService {
         try {
 
             const product = await Product.findOne({
-                where: {id: productId}
+                where: { id: productId }
             })
             if (!product) {
                 return res.status(404).json({
                     message: "Product is not found"
                 })
             } else if (product.status === "Verified") {
-                return res.status(400).json({message: "Product is Verified"});
+                return res.status(400).json({ message: "Product is Verified" });
             }
 
             // Check whether the user belongs to the specified organization
             const memberCensor = await MemberOrganization.findOne({
-                where: {userId}
+                where: { userId }
             })
             if (!memberCensor || (product.censorId !== memberCensor.censorId)) {
-                return res.status(400).json({message: "The user does not belong to the specified organization"});
+                return res.status(400).json({ message: "The user does not belong to the specified organization" });
             }
 
             // Update status of Product
@@ -277,8 +277,7 @@ class CensorService {
         }
     }
 
-
-    async postAuctionSession(body, res) {
+    async postAuctionSession(censor, body, res) {
         try {
             const startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
             const endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
@@ -289,7 +288,7 @@ class CensorService {
                 startTime,
                 endTime,
                 productId: body.productId,
-                censorId: body.censorId,
+                censorId: censor.censorId,
             })
 
             return res.status(200).json({
@@ -309,7 +308,7 @@ class CensorService {
             const auctionSession = await ProductAuction.update({
                 ...body
             }, {
-                where: {id: sessionId}
+                where: { id: sessionId }
             })
 
             const status = auctionSession[0] === 1 ? 200 : 404;
@@ -324,7 +323,7 @@ class CensorService {
     async deleteAuctionSession(sessionId, res) {
         try {
             const auctionSession = await ProductAuction.destroy({
-                where: {id: sessionId}
+                where: { id: sessionId }
             })
             const status = auctionSession > 0 ? 200 : 404;
             return res.status(status).json({
