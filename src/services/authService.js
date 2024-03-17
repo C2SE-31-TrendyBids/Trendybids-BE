@@ -30,7 +30,7 @@ class AuthService {
                 html: readFileTemplate('verifyEmail.hbs', { otp: otp })
             })
 
-            const status = created ? 201 : 409;
+            const status = created ? 201 : 200;
             return res.status(status).json({
                 message: created ? "Register is successfully" : "Email has already registered",
             });
@@ -126,7 +126,7 @@ class AuthService {
                 where: { email }
             })
             if (!user) {
-                return res.status(401).json({
+                return res.status(200).json({
                     message: "Email hasn't been registered"
                 });
             }
