@@ -76,7 +76,7 @@ const validateAuctionSession = (body, type = "post") => {
             startTime: joi.string().required(),
             endTime: joi.string().required(),
             productId: joi.string().required(),
-            censorId: joi.string().required(),
+            // censorId: joi.string().required(),
         }).validate(body)
     } else {
         return joi.object({

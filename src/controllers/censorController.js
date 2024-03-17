@@ -35,7 +35,7 @@ class CensorController {
 
     async getCurrentCensor(req, res) {
         try {
-            return await censorServices.getCurrentCensor(req?.user?.id,req.query, res);
+            return await censorServices.getCurrentCensor(req?.user?.id, req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -71,13 +71,13 @@ class CensorController {
 
     postAuctionSession(req, res) {
         try {
-            const { error } = validateAuctionSession(req.body, "post");
+            const { error } = validateAuctionSession(req.body.body, "post");
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            return censorServices.postAuctionSession(req.body, res);
+            return censorServices.postAuctionSession(req.memberOrganization.dataValues, req.body.body, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
