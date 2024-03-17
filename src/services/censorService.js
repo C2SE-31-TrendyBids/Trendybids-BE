@@ -257,6 +257,27 @@ class CensorService {
         }
     }
 
+    async getCensorIdByUserId(userId) {
+        try {
+            const memberOrg = await MemberOrganization.findOne({
+                where: {
+                    userId: userId
+                }
+            });
+
+            if (!memberOrg || !memberOrg.censorId) {
+                return null;
+            }
+
+            return memberOrg.censorId;
+        } catch (error) {
+            // Xử lý lỗi nếu có
+            console.error('Error getting censorId by userId:', error);
+            throw error;
+        }
+    }
+
+
     async postAuctionSession(body, res) {
         try {
             const startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()

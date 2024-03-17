@@ -6,6 +6,7 @@ const Category = require('../models/category')
 const {Op} = require("sequelize");
 const {uploadMultipleFile, deleteMultipleFile} = require("../util/firebase.config");
 const prdImage = require("../models/prdImage");
+const censorServices = require("../services/censorService")
 
 class ProductServices {
 
@@ -27,8 +28,9 @@ class ProductServices {
             // handle config query
             if (order) queries.order = [order];
             const roleCensor = "R02"
+            const censorId = await censorServices.getCensorIdByUserId(userId);
             const productQuery = {
-                ...(role?.dataValues?.id === roleCensor ? {censorId: userId} : {ownerProductId: userId}),
+                ...(role?.dataValues?.id === roleCensor ? {censorId: censorId} : {ownerProductId: userId}),
                 ...(productName ? {productName: {[Op.substring]: productName}} : {}),
                 ...(categoryId ? {categoryId: categoryId} : {}),
                 ...(priceFrom !== undefined ? {startingPrice: {[Op.gte]: priceFrom}} : {}),
