@@ -14,6 +14,7 @@ router.get("/get-censor", censorControllers.getCensorByQuery);
 router.use(verifyToken)
 router.use(isCensor)
 router.post('/approve-auction-product', censorControllers.approveAuctionProduct)
+router.get("/my-auction-session", censorControllers.getAuctionByToken);
 router.get('/me', censorControllers.getCurrentCensor)
 router.post('/approve-auction-product', censorControllers.approveAuctionProduct)
 router.post('/post-auction-session', censorControllers.postAuctionSession)

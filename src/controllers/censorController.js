@@ -53,6 +53,16 @@ class CensorController {
         }
     }
 
+    async getAuctionByToken(req, res) {
+        try {
+            return await censorServices.getAuctionsByToken( req?.user?.id,req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
     approveAuctionProduct(req, res) {
         try {
             const productId = req.body.productId
