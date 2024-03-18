@@ -40,13 +40,13 @@ const Product = sequelize.define("product", {
     },
 }, {
     tableName: 'product',
-    timestamps: false
+    timestamps: true
 });
 
-Product.hasMany(PrdImage, {foreignKey: 'productId', as: 'prdImages'})
-Product.belongsTo(Category, {foreignKey: 'categoryId', targetKey: 'id', as: 'category'})
-Product.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner'})
-Product.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'})
-ProductAuction.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id', as: 'product'});
+Product.hasMany(PrdImage, { foreignKey: 'productId', as: 'prdImages' })
+Product.belongsTo(Category, { foreignKey: 'categoryId', targetKey: 'id', as: 'category' })
+Product.belongsTo(User, { foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner' })
+Product.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' })
+ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as: 'product' });
 
 module.exports = Product;

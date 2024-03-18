@@ -3,11 +3,7 @@ const { validateAuctionProduct, validateUpdateProduct } = require("../helpers/jo
 
 
 class ProductController {
-
     async getProductByQuery(req, res) {
-        console.log(req?.user?.id);
-        console.log(req?.user?.role);
-        console.log(req.query);
         try {
 
             return await productServices.getAll(req?.user?.id, req?.user?.role, req.query, res);

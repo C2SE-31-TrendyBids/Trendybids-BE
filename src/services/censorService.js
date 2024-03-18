@@ -348,6 +348,39 @@ class CensorService {
             throw new Error(error)
         }
     }
+    async rejecteAuctionProduct(userId, productId, res) {
+        try {
+
+            const product = await Product.findOne({
+                where: { id: productId }
+            })
+            if (!product) {
+                return res.status(404).json({
+                    message: "Product is not found"
+                })
+            } else if (product.status === "Rejected") {
+                return res.status(400).json({ message: "Product is rejected" });
+            }
+
+            // Check whether the user belongs to the specified organization
+            const memberCensor = await MemberOrganization.findOne({
+                where: { userId }
+            })
+            if (!memberCensor || (product.censorId !== memberCensor.censorId)) {
+                return res.status(400).json({ message: "The user does not belong to the specified organization" });
+            }
+
+            // Update status of Product
+            product.status = "Rejected"
+            await product.save()
+
+            return res.status(200).json({
+                message: "Rejected auction product successfully"
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 
     async getCensorIdByUserId(userId) {
         try {
