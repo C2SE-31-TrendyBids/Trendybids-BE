@@ -3,7 +3,7 @@ class AdminService {
     async approveCensor(user, censorId, res) {
         try {
             const censor = await Censor.findOne({
-                where: {id: censorId}
+                where: { id: censorId }
             })
             if (!censor) {
                 return res.status(404).json({

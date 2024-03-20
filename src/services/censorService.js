@@ -412,7 +412,7 @@ class CensorService {
                 productId: body.productId,
                 censorId: censor.censorId,
             })
-
+            await Product.update({ status: 'Success' }, { where: { id: body.productId } });
             return res.status(200).json({
                 message: "Post auction successfully",
                 data: auctionSession
