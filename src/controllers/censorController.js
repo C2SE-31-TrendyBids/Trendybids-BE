@@ -86,13 +86,14 @@ class CensorController {
 
     postAuctionSession(req, res) {
         try {
-            const { error } = validateAuctionSession(req.body.body, "post");
+            console.log(req.body);
+            const { error } = validateAuctionSession(req.body, "post");
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            return censorServices.postAuctionSession(req.memberOrganization.dataValues, req.body.body, res);
+            return censorServices.postAuctionSession(req.memberOrganization.dataValues, req.body, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

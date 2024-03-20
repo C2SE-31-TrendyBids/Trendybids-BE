@@ -41,11 +41,11 @@ const Censor = sequelize.define("censor", {
     timestamps: false
 });
 
-Censor.hasMany(ProductAuction, {foreignKey: 'censorId', as: 'productAuctions'});
-Censor.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'});
-Censor.belongsTo(Role, {foreignKey: 'roleId', targetKey: 'id', as: 'role'});
-Censor.belongsTo(Wallet, {foreignKey: 'walletId', targetKey: 'id', as: 'wallet'})
-ProductAuction.belongsTo(Censor, {foreignKey: 'censorId', targetKey: 'id', as: 'censor'});
+Censor.hasMany(ProductAuction, { foreignKey: 'censorId', as: 'productAuctions' });
+Censor.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' });
+Censor.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' });
+Censor.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
+ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
 
 
 module.exports = Censor;

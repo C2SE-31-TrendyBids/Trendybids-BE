@@ -312,18 +312,15 @@ class CensorService {
 
     async postAuctionSession(censor, body, res) {
         try {
-            const startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
-            const endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
-
             const auctionSession = await ProductAuction.create({
                 title: body.title,
                 description: body.description,
-                startTime,
-                endTime,
+                startTime: body.startTime,
+                endTime: body.endTime,
                 productId: body.productId,
                 censorId: censor.censorId,
             })
-
+            await Product.update({ status: 'Success' }, { where: { id: body.productId } });
             return res.status(200).json({
                 message: "Post auction successfully",
                 data: auctionSession
