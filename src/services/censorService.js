@@ -8,7 +8,6 @@ const User = require("../models/user");
 const PrdImage = require("../models/prdImage");
 const Category = require("../models/category");
 const Wallet = require("../models/wallet");
-const moment = require('moment');
 
 class CensorService {
     async register({
@@ -197,6 +196,7 @@ class CensorService {
             throw new Error(err)
         }
     }
+
 
     async getAuctionsByToken(userId, {
         page,
@@ -440,18 +440,15 @@ class CensorService {
 
     async postAuctionSession(censor, body, res) {
         try {
-            const startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
-            const endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
-
             const auctionSession = await ProductAuction.create({
                 title: body.title,
                 description: body.description,
-                startTime,
-                endTime,
+                startTime: body.startTime,
+                endTime: body.endTime,
                 productId: body.productId,
                 censorId: censor.censorId,
             })
-
+            await Product.update({status: 'Success'}, {where: {id: body.productId}});
             return res.status(200).json({
                 message: "Post auction successfully",
                 data: auctionSession
@@ -463,9 +460,6 @@ class CensorService {
 
     async updateAuctionSession(sessionId, body, res) {
         try {
-            if (body.startTime) body.startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
-            if (body.endTime) body.endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
-
             const auctionSession = await ProductAuction.update({
                 ...body
             }, {

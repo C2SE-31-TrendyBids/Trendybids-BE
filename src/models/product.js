@@ -35,7 +35,7 @@ const Product = sequelize.define("product", {
         field: 'censor_id',
     },
     status: {
-        type: DataTypes.ENUM('Processing', 'Verified', 'Rejected'),
+        type: DataTypes.ENUM('Processing', 'Verified', 'Rejected', 'Success'),
         defaultValue: 'Processing',
     },
 }, {
