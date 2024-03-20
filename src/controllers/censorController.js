@@ -96,7 +96,6 @@ class CensorController {
 
     postAuctionSession(req, res) {
         try {
-            console.log(req.body);
             const { error } = validateAuctionSession(req.body, "post");
             if (error) {
                 return res.status(400).json({

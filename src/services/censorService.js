@@ -8,7 +8,6 @@ const User = require("../models/user");
 const PrdImage = require("../models/prdImage");
 const Category = require("../models/category");
 const Wallet = require("../models/wallet");
-const moment = require('moment');
 
 class CensorService {
     async register({
@@ -181,7 +180,7 @@ class CensorService {
         }
     }
 
-    async getAuctionsByToken( userId,{ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
+    async getAuctionsByToken( userId,{ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, status, ...query }, res) {
         try {
             const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -219,6 +218,7 @@ class CensorService {
             if (censorId) {
                 query.censorId = censorId;
             }
+            if (status) query.status = status;
 
             const productQuery = {
                 ...(productName !== undefined ? { productName: { [Op.substring]: productName } } : {}),
@@ -424,9 +424,6 @@ class CensorService {
 
     async updateAuctionSession(sessionId, body, res) {
         try {
-            if (body.startTime) body.startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
-            if (body.endTime) body.endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
-
             const auctionSession = await ProductAuction.update({
                 ...body
             }, {
