@@ -181,6 +181,98 @@ class CensorService {
         }
     }
 
+    async getAuctionsByToken( userId,{ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
+        try {
+            const queries = { raw: false, nest: true };
+            // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
+            let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
+            const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
+
+            // If pageNumber is less than 1, set it to 1
+            pageNumber = pageNumber < 1 ? 1 : pageNumber;
+            // Calculate the offset
+            const offset = (pageNumber - 1) * limitNumber;
+            queries.offset = offset;
+            queries.limit = limitNumber;
+            // handle config query
+            if (order) queries.order = [order];
+            // Order product by startingPrice if specified
+            const queriesProduct = { raw: false, nest: true }
+            if (orderProduct === 'price_ASC') {
+                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'ASC']];
+            } else if (orderProduct === 'price_DESC') {
+                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'DESC']];
+            }
+            // Add a sort condition by product name if specified
+            if (orderProduct === 'productName_ASC') {
+                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'ASC']];
+            } else if (orderProduct === 'productName_DESC') {
+                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'DESC']];
+            }
+            // Commented out categoryId query as it's already handled in productQuery
+            if (categoryId) {
+                query['$product.category.id$'] = categoryId;
+            }
+
+            const censorId = await this.getCensorIdByUserId(userId)
+
+            if (censorId) {
+                query.censorId = censorId;
+            }
+
+            const productQuery = {
+                ...(productName !== undefined ? { productName: { [Op.substring]: productName } } : {}),
+                ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
+                ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
+            };
+
+            const { count, rows } = await ProductAuction.findAndCountAll({
+                where: query,
+                ...queries,
+                attributes: { exclude: ['productId', 'censorId'] },
+                subQuery: false,
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        required: true,
+                        where: productQuery,
+                        attributes: { exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"] },
+                        include: [
+                            {
+                                model: User,
+                                as: 'owner',
+                                required: true,
+                                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                            }, {
+                                model: PrdImage,
+                                as: 'prdImages',
+                                attributes: { exclude: ['productId'] }
+                            },
+                            {
+                                model: Category,
+                                as: 'category',
+                                required: true,
+                            }
+                        ],
+                    }
+                ],
+                distinct: true
+            });
+
+            const totalPages = Math.ceil(count / limitNumber)
+            return res.status(200).json({
+                message: "Get my product auctions successfully!",
+                totalItem: count,
+                totalPages: totalPages,
+                productAuctions: rows
+            });
+        } catch (err) {
+            console.log(err);
+            throw new Error(err)
+        }
+    }
+
     async getCurrentCensor(userId, { page, limit, order, ...query }, res) {
         try {
             const queries = { raw: false, nest: true };
