@@ -84,6 +84,7 @@ const validateAuctionSession = (body, type = "post") => {
             description: joi.string(),
             startTime: joi.string(),
             endTime: joi.string(),
+            status: joi.string(),
         }).validate(body)
     }
 }
