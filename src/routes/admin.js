@@ -1,11 +1,16 @@
 const express = require('express')
 const {verifyToken, isAdmin} = require("../middlewares/verifyToken");
 const adminController = require('../controllers/adminController')
+const multer = require("multer");
 
 const router = express.Router()
+const upload = multer({storage: multer.memoryStorage()})
 
 router.use(verifyToken)
 router.use(isAdmin)
 router.post('/approve-censor', adminController.approveCensor)
+router.get('/get-users', adminController.getUsers)
+router.put('/edit-user/:userId', upload.single('avatar'), adminController.editUser)
+router.delete('/delete-user', adminController.deleteUser)
 
 module.exports = router
