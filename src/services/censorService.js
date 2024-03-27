@@ -21,7 +21,7 @@ class CensorService {
                        placeTaxCode
                    }, avatar, res) {
         try {
-            const uploadAvatar = await uploadFile(avatar, 'avatar')
+            const uploadAvatar = await uploadFile(avatar, 'censor')
             const avatarUrl = uploadAvatar.url
             const [censor, created] = await Censor.findOrCreate({
                 where: {phoneNumber},

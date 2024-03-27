@@ -10,9 +10,9 @@ const Message = sequelize.define("message", {
         allowNull: false,
         primaryKey: true,
     },
-    content: DataTypes.STRING(20),
+    content: DataTypes.TEXT,
     createdAt: {
-        type: DataTypes.TEXT,
+        type: DataTypes.DATE,
         field: 'created_at',
     },
     conversationId: {
