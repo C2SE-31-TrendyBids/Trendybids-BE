@@ -2,7 +2,7 @@ const Censor = require('../models/censor')
 const User = require('../models/user')
 const Role = require('../models/role')
 const {Op, where} = require("sequelize");
-const {uploadFile, deleteFile, deleteMultipleFile} = require("../util/firebase.config");
+const {uploadFile, deleteFile, deleteMultipleFile} = require("../config/firebase.config");
 
 class AdminService {
     async approveCensor(user, censorId, res) {
