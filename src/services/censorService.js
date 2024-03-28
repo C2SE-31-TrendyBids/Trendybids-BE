@@ -11,7 +11,7 @@ const Wallet = require("../models/wallet");
 const moment = require('moment');
 
 class CensorService {
-    async register({
+    async register(user, {
         name,
         phoneNumber,
         founding,
@@ -22,8 +22,19 @@ class CensorService {
         placeTaxCode
     }, avatar, res) {
         try {
-            const uploadAvatar = await uploadFile(avatar, 'avatar')
-            const avatarUrl = uploadAvatar.url
+            const userMember = await MemberOrganization.findOne({ where: { userId: user.id } })
+            if (userMember) {
+                return res.status(200).json({
+                    message: "Your account is already a member of the organization",
+                });
+            }
+            let avatarUrl = '';
+            if (avatar === 1) {
+                avatarUrl = 'https://firebasestorage.googleapis.com/v0/b/beautyboutique-7ebb3.appspot.com/o/Avatar%2Flogo.png?alt=media&token=440531f8-2369-4dce-8cf3-86913dfc4a27'
+            } else {
+                const uploadAvatar = await uploadFile(avatar, 'avatar')
+                avatarUrl = uploadAvatar.url
+            }
             const [censor, created] = await Censor.findOrCreate({
                 where: { phoneNumber },
                 defaults: {
@@ -181,7 +192,7 @@ class CensorService {
         }
     }
 
-    async getAuctionsByToken( userId,{ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
+    async getAuctionsByToken(userId, { page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
         try {
             const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
