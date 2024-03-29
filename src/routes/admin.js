@@ -8,7 +8,7 @@ const upload = multer({storage: multer.memoryStorage()})
 
 router.use(verifyToken)
 router.use(isAdmin)
-router.post('/approve-censor', adminController.approveCensor)
+router.post('/toggle-status-censor', adminController.toggleStatusCensor)
 router.get('/get-users', adminController.getUsers)
 router.put('/edit-user/:userId', upload.single('avatar'), adminController.editUser)
 router.delete('/delete-user', adminController.deleteUser)

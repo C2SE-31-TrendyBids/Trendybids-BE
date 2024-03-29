@@ -1,15 +1,21 @@
 const adminServices = require('../services/adminService')
 const {validateRegister, validateEditUser} = require("../helpers/joiSchema");
 class AdminController {
-    approveCensor(req, res) {
+    toggleStatusCensor(req, res) {
         try {
             const censorId = req.body.censorId
+            const type = req.body.type;
             if (!censorId) {
                 return res.status(400).json({
                     message: '\"censorId\" is required',
                 });
             }
-            return adminServices.approveCensor(censorId, res)
+            if (type !== "1" && type !== "2") {
+                return res.status(400).json({
+                    message: '\"type\" value is 1 or 2 (Verified or Rejected)',
+                });
+            }
+            return adminServices.toggleStatusCensor(type, censorId, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

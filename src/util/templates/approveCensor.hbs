@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Censor</title>
+    <style>
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background-color: #e2f0ff;
+        }
+        .container {
+            max-width: 35rem;
+            padding: 3rem;
+            margin: 0 auto ;
+            text-align: center;
+            color: #334155;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border-radius: 0.75rem;
+        }
+        .container .title {
+            font-size: 1.5rem;
+            text-align: inherit;
+            color: #42f445;
+        }
+        .container .content {
+            margin-top: 1rem;
+        }
+        .content .note-item {
+            color: #4285F4;
+            font-size: 0.8rem;
+            margin: 1rem 0;
+        }
+        .content .sub-note {
+            margin-top: 1rem;
+            font-size: 0.75rem;
+        }
+        .sub-note .hotline-item {
+            color: #4285F4;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="container">
+        <h3 class="title">Organization successfully verified</h3>
+        <p>Hi {{username}} ! Through the verification process, we are pleased to announce that the auction organization you registered for has been successfully verified..</p>
+        <div class="content">
+            <div class="note-item">Please visit <a target="_blank" href="http://localhost:3000" style="color: #4285F4">TrendyBids</a> and Log in to check your organization has been authenticated</div>
+            <p class="sub-note">If you have problems, please contact the Technical Team - Hotline:
+                <span class="hotline-item">0236589325</span>
+            </p>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
