@@ -36,6 +36,10 @@ const Censor = sequelize.define("censor", {
     taxCodeIssuanceDate: DataTypes.DATE,
     position: DataTypes.STRING,
     placeTaxCode: DataTypes.STRING,
+    userId: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4
+    }
 }, {
     tableName: 'censor',
     timestamps: false

@@ -45,8 +45,8 @@ const Product = sequelize.define("product", {
 
 Product.hasMany(PrdImage, { foreignKey: 'productId', as: 'prdImages' })
 Product.belongsTo(Category, { foreignKey: 'categoryId', targetKey: 'id', as: 'category' })
-Product.belongsTo(User, { foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner' })
+Product.belongsTo(User, { foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner', onDelete: 'CASCADE'})
 Product.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' })
-ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as: 'product' });
+ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as: 'product', onDelete: 'CASCADE' });
 
 module.exports = Product;

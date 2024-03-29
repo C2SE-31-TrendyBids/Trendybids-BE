@@ -84,8 +84,19 @@ const validateAuctionSession = (body, type = "post") => {
             description: joi.string(),
             startTime: joi.string(),
             endTime: joi.string(),
+            status: joi.string(),
         }).validate(body)
     }
+}
+
+const validateEditUser = (body) => {
+    return joi.object({
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }),
+        fullName: joi.string().min(3).max(30),
+        phoneNumber: joi.string().min(10).max(11),
+        address: joi.string().min(5),
+        status: joi.string().min(3).max(10),
+    }).validate(body)
 }
 
 module.exports = {
@@ -97,5 +108,6 @@ module.exports = {
     validateAuctionProduct,
     validateUpdateProduct,
     validateRegisterCensor,
-    validateAuctionSession
+    validateAuctionSession,
+    validateEditUser
 }

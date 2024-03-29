@@ -1,5 +1,5 @@
 const sequelize = require("../util/database");
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 const Conversation = require("./conversation");
 const User = require("./user");
 
@@ -10,9 +10,9 @@ const Message = sequelize.define("message", {
         allowNull: false,
         primaryKey: true,
     },
-    content: DataTypes.STRING(20),
+    content: DataTypes.TEXT,
     createdAt: {
-        type: DataTypes.TEXT,
+        type: DataTypes.DATE,
         field: 'created_at',
     },
     conversationId: {
@@ -28,7 +28,7 @@ const Message = sequelize.define("message", {
     timestamps: false
 });
 
-Message.belongsTo(Conversation, {foreignKey: 'conversationId', targetKey: 'id', as: 'conversation'})
-Message.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
+Message.belongsTo(Conversation, { foreignKey: 'conversationId', targetKey: 'id', as: 'conversation' })
+Message.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' })
 
 module.exports = Message;

@@ -8,7 +8,6 @@ const User = require("../models/user");
 const PrdImage = require("../models/prdImage");
 const Category = require("../models/category");
 const Wallet = require("../models/wallet");
-const moment = require('moment');
 
 class CensorService {
     async register(user, {
@@ -22,7 +21,8 @@ class CensorService {
         placeTaxCode
     }, avatar, res) {
         try {
-            const userMember = await MemberOrganization.findOne({ where: { userId: user.id } })
+            const userId = user.id;
+            const userMember = await MemberOrganization.findOne({ where: { userId: userId } })
             if (userMember) {
                 return res.status(200).json({
                     message: "Your account is already a member of the organization",
@@ -46,7 +46,8 @@ class CensorService {
                     companyTaxCode,
                     taxCodeIssuanceDate,
                     position,
-                    placeTaxCode
+                    placeTaxCode,
+                    userId
                 }
             })
             const status = created ? 201 : 409;
@@ -100,7 +101,18 @@ class CensorService {
     }
 
 
-    async getAuctions({ page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
+    async getAuctions({
+        page,
+        limit,
+        order,
+        productName,
+        orderProduct,
+        time,
+        categoryId,
+        priceFrom,
+        priceTo,
+        ...query
+    }, res) {
         try {
             const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -137,6 +149,12 @@ class CensorService {
                 ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
                 ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
             };
+
+            if (time === "nearest") {
+                queries.order = [["startTime", "ASC"]];
+            } else if (time === "furthest") {
+                queries.order = [["startTime", "DESC"]];
+            }
 
             const { count, rows } = await ProductAuction.findAndCountAll({
                 where: query,
@@ -192,7 +210,20 @@ class CensorService {
         }
     }
 
-    async getAuctionsByToken(userId, { page, limit, order, productName, orderProduct, categoryId, priceFrom, priceTo, ...query }, res) {
+
+    async getAuctionsByToken(userId, {
+        page,
+        limit,
+        order,
+        time,
+        productName,
+        upCome,
+        orderProduct,
+        categoryId,
+        priceFrom,
+        priceTo,
+        ...query
+    }, res) {
         try {
             const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -236,6 +267,12 @@ class CensorService {
                 ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
                 ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
             };
+
+            if (time === "nearest") {
+                queries.order = [["startTime", "ASC"]];
+            } else if (time === "furthest") {
+                queries.order = [["startTime", "DESC"]];
+            }
 
             const { count, rows } = await ProductAuction.findAndCountAll({
                 where: query,
@@ -359,6 +396,7 @@ class CensorService {
             throw new Error(error)
         }
     }
+
     async rejecteAuctionProduct(userId, productId, res) {
         try {
 
@@ -435,9 +473,6 @@ class CensorService {
 
     async updateAuctionSession(sessionId, body, res) {
         try {
-            if (body.startTime) body.startTime = moment(body.startTime, "DD-MM-YYYY HH:mm").toDate()
-            if (body.endTime) body.endTime = moment(body.endTime, "DD-MM-YYYY HH:mm").toDate()
-
             const auctionSession = await ProductAuction.update({
                 ...body
             }, {
