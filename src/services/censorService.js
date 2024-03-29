@@ -1,4 +1,4 @@
-const { uploadFile, uploadMultipleFile } = require("../util/firebase.config");
+const { uploadFile, uploadMultipleFile } = require("../config/firebase.config");
 const { Op } = require("sequelize");
 const Censor = require("../models/censor");
 const ProductAuction = require("../models/productAuction");
