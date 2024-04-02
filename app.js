@@ -1,11 +1,10 @@
 const express = require('express');
 const cors = require("cors");
-const path = require('path');
 const cookieParser = require('cookie-parser');
 const { createServer } = require('http');
 require("dotenv").config();
 require("./src/config/database")
-require("./src/models")
+require("./src/models");
 require("./src/util/passportGoogle")
 
 const initRoutes = require("./src/routes");

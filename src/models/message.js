@@ -1,7 +1,6 @@
 const sequelize = require("../config/database");
-const { DataTypes } = require("sequelize");
-const Conversation = require("./conversation");
-const User = require("./user");
+const {DataTypes} = require("sequelize");
+
 
 const Message = sequelize.define("message", {
     id: {
@@ -11,9 +10,15 @@ const Message = sequelize.define("message", {
         primaryKey: true,
     },
     content: DataTypes.TEXT,
+    imgUrls: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        field: 'img_urls',
+        allowNull: true
+    },
     createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',
+        defaultValue: DataTypes.NOW,
     },
     conversationId: {
         type: DataTypes.UUID,
@@ -27,8 +32,5 @@ const Message = sequelize.define("message", {
     tableName: 'message',
     timestamps: false
 });
-
-Message.belongsTo(Conversation, { foreignKey: 'conversationId', targetKey: 'id', as: 'conversation' })
-Message.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' })
 
 module.exports = Message;

@@ -13,4 +13,5 @@ require('./productAuction')
 require('./prdImage')
 require('./userParticipant')
 require('./memberOrganization')
+require('./converParticipant')
 

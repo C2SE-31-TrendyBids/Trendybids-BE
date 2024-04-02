@@ -1,6 +1,5 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
-const User = require("./conversation");
 
 const Wallet = sequelize.define("wallet", {
     id: {
@@ -14,7 +13,5 @@ const Wallet = sequelize.define("wallet", {
     tableName: 'wallet',
     timestamps: false
 });
-
-Wallet.hasOne(User)
 
 module.exports = Wallet;
