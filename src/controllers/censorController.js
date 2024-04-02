@@ -19,7 +19,6 @@ class CensorController {
             return await censorServices.register(req.body, avatar, res);
         } catch (error) {
             console.error("Error in registerCensor:", error);
-
         }
     }
 

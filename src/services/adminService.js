@@ -119,7 +119,7 @@ class AdminService {
             }
 
             if (avatar) {
-                const avatarUpload = await uploadFile(avatar, 'user-avatar', userId)
+                const avatarUpload = await uploadFile(avatar, 'user', userId)
                 body.avatar = avatarUpload.url
             }
 
@@ -145,8 +145,8 @@ class AdminService {
             // Delete user avatar in Firebase
             if (user > 0) {
                 Array.isArray(userId)
-                    ? await deleteMultipleFile(userId, 'user-avatar')
-                    : await deleteFile(userId, 'user-avatar');
+                    ? await deleteMultipleFile(userId, 'user')
+                    : await deleteFile(userId, 'user');
             }
 
             const status = user > 0 ? 200 : 404;
