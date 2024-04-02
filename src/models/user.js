@@ -63,6 +63,5 @@ User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' }
 User.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' })
 User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });
-User.hasMany(Message, { foreignKey: 'userId', as: 'message' });
 
 module.exports = User;

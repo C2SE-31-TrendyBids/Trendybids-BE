@@ -1,6 +1,5 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
-const Message = require("./message");
 
 const Conversation = sequelize.define("conversation", {
     id: {
@@ -18,7 +17,5 @@ const Conversation = sequelize.define("conversation", {
     tableName: 'conversation',
     timestamps: false
 });
-
-Conversation.hasMany(Message, { as: 'conversation', foreignKey: 'conversationId' });
 
 module.exports = Conversation;

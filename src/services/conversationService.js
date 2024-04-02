@@ -1,7 +1,6 @@
 const Conversation = require('../models/Conversation');
 const ConverParticipant = require('../models/converParticipant');
 const User = require('../models/user');
-const {Sequelize} = require('sequelize');
 
 User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });

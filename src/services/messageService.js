@@ -4,8 +4,6 @@ const User = require("../models/user");
 const Message = require("../models/message");
 const {Op} = require("sequelize");
 
-Message.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' })
-
 class MessageService {
     async createMessage({ conversationId, content }, files, userId, res) {
         try {
