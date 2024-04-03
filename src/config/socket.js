@@ -33,7 +33,7 @@ const initSocket = (server) => {
     })
 
     io.on('connection', (socket) => {
-        console.log(`New Incoming Connection: ${socket.user}`);
+        console.log("New Incoming Connection:", socket.user.id);
         socket.emit('Connected', {status: 'good'})
         // Save client connected to map
         connectedClients.set(socket.user.id, socket);
@@ -55,12 +55,20 @@ const initSocket = (server) => {
         // ----- Handle event in Conversation -----
         socket.on('onConversationJoin', (payload) => {
             socket.join(payload.conversationId);
-            console.log(socket.rooms)
+            console.log("onConversationJoin", socket.rooms)
+        })
+
+        socket.on('onTypingStart', (payload) => {
+            socket.to(payload.conversationId).emit('onTypingStart');
+        })
+
+        socket.on('onTypingStop', (payload) => {
+            socket.to(payload.conversationId).emit('onTypingStart');
         })
 
         socket.on('onConversationJoin', (payload) => {
             socket.join(payload.conversationId);
-            console.log(socket.rooms)
+            console.log("onConversationJoin", socket.rooms)
         })
 
 
@@ -90,6 +98,16 @@ const initSocket = (server) => {
             }
         })
     });
+
+    eventEmitter.on('conversation.create', async (payload) => {
+        const parsePayload = JSON.parse(payload);
+        const recipientId = parsePayload.recipient.id;
+        console.log(recipientId)
+
+        // Check client connected in socket
+        const client = connectedClients.get(recipientId);
+        client && client.emit('onConversation', parsePayload);
+    })
 }
 
 module.exports = initSocket;

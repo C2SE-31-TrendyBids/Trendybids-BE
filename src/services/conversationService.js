@@ -1,10 +1,16 @@
-const Conversation = require('../models/Conversation');
+const Conversation = require('../models/conversation');
+const Message = require('../models/message')
 const ConverParticipant = require('../models/converParticipant');
 const User = require('../models/user');
+const messageService = require('./messageService');
+const eventEmitter = require("../config/eventEmitter");
+const {Op} = require("sequelize");
+const sequelize = require('../config/database');
 
 User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });
 ConverParticipant.belongsTo(User, {foreignKey: 'userId', as: 'user'})
+Conversation.hasMany(Message, {foreignKey: 'conversationId', as: 'messages'})
 
 class ConversationService {
     async getConversations({page, limit}, userId, res) {
@@ -35,6 +41,17 @@ class ConversationService {
                             attributes: [],
                         },
                         attributes: ['id', 'fullName', 'avatarUrl'],
+                    },
+                    {
+                        model: Message,
+                        as: 'messages',
+                        attributes: ['id', 'content', 'imgUrls', 'createdAt'],
+                        where: {
+                            createdAt: {
+                                [Op.eq]: sequelize.literal(`(SELECT MAX("created_at") FROM "message" WHERE "conversation_id" = "conversation"."id")`)
+                            }
+                        },
+                        include: { model: User, as: 'user', attributes: ['id', 'fullName', 'avatarUrl'] }
                     }
                 ]
             });
@@ -42,19 +59,20 @@ class ConversationService {
             return res.json({
                 message: "Success",
                 conversations: this.optimizeDataConversation(conversations, userId),
-                totalItem: conversations.length
+                totalItem: conversations.length,
             });
         } catch (error) {
             throw new Error(error);
         }
     }
 
-    async createConversation(recipientId, userId, res) {
+    async createConversation({recipientId, content, files}, userId, res) {
        try {
            const recipient = await User.findOne({
                where: {
                    id: recipientId
-               }
+               },
+               attributes: ['id', 'fullName', 'avatarUrl']
            })
 
            if (!recipient) {
@@ -71,14 +89,26 @@ class ConversationService {
            }
 
            const newConversation = await Conversation.create();
-           await ConverParticipant.bulkCreate([
-               {userId, conversationId: newConversation.id},
-               {userId: recipientId, conversationId: newConversation.id}
+           const [participants, messageData] = await Promise.all([
+               ConverParticipant.bulkCreate([
+                   {userId, conversationId: newConversation.id},
+                   {userId: recipientId, conversationId: newConversation.id}
+               ]),
+               messageService.saveMessage(files, newConversation.id, content, userId)
            ])
+
+           const responseData = {
+               id: newConversation.id,
+               recipient,
+               latestMessage: messageData
+           }
+
+           // Emit event to send message to client
+           eventEmitter.emit('conversation.create', JSON.stringify(responseData));
 
            return res.json({
                message: "Create conversation successfully",
-               conversation: newConversation
+               responseData,
            })
        } catch (error) {
            throw new Error(error);
@@ -109,8 +139,8 @@ class ConversationService {
             const user = conversation.users.filter((user) => user.id !== userId)
             return {
                 id: conversation.id,
-                createdAt: conversation.createdAt,
-                recipient: user[0]
+                recipient: user[0],
+                latestMessage: conversation.messages[0]
             }
         })
     }
