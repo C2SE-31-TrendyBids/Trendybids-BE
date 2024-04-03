@@ -1,3 +1,4 @@
+require('./auctionHistory')
 require('./user')
 require('./role')
 require('./wallet')

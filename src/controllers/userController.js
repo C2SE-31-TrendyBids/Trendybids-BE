@@ -28,6 +28,42 @@ class UserController {
             });
         }
     }
+
+
+    getAllAuctionPriceInSession(req, res) {
+        try {
+            return userServices.getAllAuctionPrice(req.user?.id, req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+    getTheNecessaryDataInSession(req, res) {
+        try {
+            return userServices.getTheNecessaryDataInSession(req.user?.id, req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+    placeABid(req, res) {
+        try {
+            return userServices.placeABid(req.user?.id, req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+
 }
 
 module.exports = new UserController;
