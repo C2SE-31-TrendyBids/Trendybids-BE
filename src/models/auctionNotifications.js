@@ -1,7 +1,5 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
-const User = require("./user");
-const Product = require("./product");
 
 const AuctionNotification = sequelize.define("auction_notification", {
     id: {
@@ -24,8 +22,5 @@ const AuctionNotification = sequelize.define("auction_notification", {
     tableName: 'auction_notification',
     timestamps: false
 });
-
-AuctionNotification.belongsTo(User, {foreignKey: 'ownerProductId', targetKey: 'id'})
-AuctionNotification.belongsTo(Product, {foreignKey: 'productId', targetKey: 'id'})
 
 module.exports = AuctionNotification;

@@ -7,11 +7,6 @@ const eventEmitter = require("../config/eventEmitter");
 const {Op} = require("sequelize");
 const sequelize = require('../config/database');
 
-User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
-Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });
-ConverParticipant.belongsTo(User, {foreignKey: 'userId', as: 'user'})
-Conversation.hasMany(Message, {foreignKey: 'conversationId', as: 'messages'})
-
 class ConversationService {
     async getConversations({page, limit}, userId, res) {
         try {

@@ -1,10 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Role = require('./role')
-const Wallet = require('./wallet');
-const Conversation = require('./conversation');
-const ConverParticipant = require("./converParticipant");
-const Message = require("./message");
 
 const User = sequelize.define("user", {
     id: {
@@ -58,10 +53,5 @@ const User = sequelize.define("user", {
     tableName: 'user',
     timestamps: false
 });
-
-User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
-User.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' })
-User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
-Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });
 
 module.exports = User;
