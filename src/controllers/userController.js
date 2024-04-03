@@ -32,7 +32,7 @@ class UserController {
 
     getAllAuctionPriceInSession(req, res) {
         try {
-            return userServices.getAllAuctionPrice(req.user?.id, req.query, res);
+            return userServices.getAllAuctionPrice(req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -43,7 +43,7 @@ class UserController {
 
     getTheNecessaryDataInSession(req, res) {
         try {
-            return userServices.getTheNecessaryDataInSession(req.user?.id, req.query, res);
+            return userServices.getTheNecessaryDataInSession(req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

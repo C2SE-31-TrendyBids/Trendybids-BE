@@ -43,7 +43,7 @@ class UserServices {
         }
     }
 
-    async getAllAuctionPrice(userId, {page, limit, sessionId}, res) {
+    async getAllAuctionPrice({page, limit, sessionId}, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -82,17 +82,20 @@ class UserServices {
         }
     }
 
-    async getTheNecessaryDataInSession(userId, {sessionId}, res) {
+    async getTheNecessaryDataInSession({sessionId}, res) {
         try {
-            const queries = {raw: false, nest: true};
-            const auctionPrices = await AuctionHistory.findAndCountAll({
-                where: {productAuctionId: sessionId},
-                ...queries,
-                attributes: {exclude: ['userId']}
-            })
+            const highestPrice = await AuctionHistory.max('auctionPrice', {
+                where: { productAuctionId: sessionId }
+            });
+
+            const numberOfParticipants = await UserParticipant.count({
+                distinct: true,
+                where: { productAuctionId: sessionId }
+            });
 
             return res.status(200).json({
-                auctionPrices
+                numberOfParticipants,
+                highestPrice
             });
         } catch (error) {
             console.error("Error in getAllAuctionPrice:", error);
