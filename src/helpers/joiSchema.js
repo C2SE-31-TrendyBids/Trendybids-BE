@@ -99,6 +99,13 @@ const validateEditUser = (body) => {
     }).validate(body)
 }
 
+const validateCreateConversation = (body) => {
+    return joi.object({
+        recipientId: joi.string().required(),
+        content: joi.string().required(),
+    }).validate(body)
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -109,5 +116,6 @@ module.exports = {
     validateUpdateProduct,
     validateRegisterCensor,
     validateAuctionSession,
-    validateEditUser
+    validateEditUser,
+    validateCreateConversation
 }

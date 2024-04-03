@@ -1,5 +1,5 @@
 const ConverParticipant = require('../models/converParticipant');
-const {uploadMultipleFile, uploadFile} = require("../config/firebase.config");
+const {uploadMultipleFile} = require("../config/firebase.config");
 const User = require("../models/user");
 const Message = require("../models/message");
 const {Op} = require("sequelize");
@@ -8,7 +8,6 @@ const eventEmitter = require("../config/eventEmitter");
 class MessageService {
     async createMessage({ conversationId, content }, files, userId, res) {
         try {
-            let imgUrls = [];
             const conversation = await ConverParticipant.findOne({
                 where: { conversationId, userId }
             })
@@ -19,30 +18,7 @@ class MessageService {
                 })
             }
 
-            if (files && files.length > 0) {
-                const uploadImages = await uploadMultipleFile(files, 'message')
-                imgUrls = uploadImages.map(item => item.url);
-            }
-
-            const newMessage = await Message.create({
-                conversationId,
-                content,
-                userId,
-                imgUrls
-            })
-
-            // Get inserted message data
-            const messageData = await Message.findOne({
-                where: { id: newMessage.id },
-                attributes: {
-                    exclude: ['userId']
-                },
-                include: {
-                    model: User,
-                    as: 'user',
-                    attributes: ['id', 'fullName', 'avatarUrl']
-                }
-            })
+            const messageData = await this.saveMessage(files, conversationId, content, userId);
 
             eventEmitter.emit('message.create', JSON.stringify(messageData));
 
@@ -85,6 +61,34 @@ class MessageService {
         } catch (error) {
             throw new Error(error);
         }
+    }
+
+    async saveMessage(files, conversationId, content, userId) {
+        let imgUrls = [];
+        if (files && files.length > 0) {
+            const uploadImages = await uploadMultipleFile(files, 'message')
+            imgUrls = uploadImages.map(item => item.url);
+        }
+
+        const newMessage = await Message.create({
+            conversationId,
+            content,
+            userId,
+            imgUrls
+        })
+
+        // Get inserted message data
+        return Message.findOne({
+            where: { id: newMessage.id },
+            attributes: {
+                exclude: ['userId']
+            },
+            include: {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'fullName', 'avatarUrl']
+            }
+        })
     }
 }
 
