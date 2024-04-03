@@ -4,6 +4,7 @@ const User = require('../models/user');
 
 User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "userId" });
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId" });
+ConverParticipant.belongsTo(User, {foreignKey: 'userId', as: 'user'})
 
 class ConversationService {
     async getConversations({page, limit}, userId, res) {
@@ -112,6 +113,23 @@ class ConversationService {
                 recipient: user[0]
             }
         })
+    }
+
+    async getParticipants(conversationId) {
+        try {
+            const participants = await ConverParticipant.findAll({
+                where: { conversationId },
+                include: {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id']
+                }
+            })
+            // Extract user IDs from the participants
+            return participants.map(participant => participant.user.id);
+        } catch (error) {
+            throw new Error(error);
+        }
     }
 }
 

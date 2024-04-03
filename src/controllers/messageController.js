@@ -1,4 +1,5 @@
 const messageServices = require('../services/messageService')
+
 class MessageController {
     createMessage(req, res) {
         try {
