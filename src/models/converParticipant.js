@@ -1,6 +1,5 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
-const User = require("./user");
 
 const converParticipant = sequelize.define("converParticipant", {
     id: {

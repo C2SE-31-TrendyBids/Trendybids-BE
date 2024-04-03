@@ -1,7 +1,5 @@
 const sequelize = require("../config/database");
 const { DataTypes } = require("sequelize");
-const Product = require("./product");
-
 
 const PrdImage = sequelize.define("prd_image", {
     id: {

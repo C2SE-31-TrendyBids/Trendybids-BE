@@ -1,10 +1,5 @@
 const sequelize = require("../config/database");
 const { DataTypes } = require("sequelize");
-const User = require("./user");
-const PrdImage = require("./prdImage");
-const Censor = require("./censor");
-const Category = require("./category");
-const ProductAuction = require("./productAuction");
 
 const Product = sequelize.define("product", {
     id: {
@@ -42,11 +37,5 @@ const Product = sequelize.define("product", {
     tableName: 'product',
     timestamps: true
 });
-
-Product.hasMany(PrdImage, { foreignKey: 'productId', as: 'prdImages' })
-Product.belongsTo(Category, { foreignKey: 'categoryId', targetKey: 'id', as: 'category' })
-Product.belongsTo(User, { foreignKey: 'ownerProductId', targetKey: 'id', as: 'owner', onDelete: 'CASCADE'})
-Product.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' })
-ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as: 'product', onDelete: 'CASCADE' });
 
 module.exports = Product;
