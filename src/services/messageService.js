@@ -3,6 +3,7 @@ const {uploadMultipleFile, uploadFile} = require("../config/firebase.config");
 const User = require("../models/user");
 const Message = require("../models/message");
 const {Op} = require("sequelize");
+const eventEmitter = require("../config/eventEmitter");
 
 class MessageService {
     async createMessage({ conversationId, content }, files, userId, res) {
@@ -42,6 +43,8 @@ class MessageService {
                     attributes: ['id', 'fullName', 'avatarUrl']
                 }
             })
+
+            eventEmitter.emit('message.create', JSON.stringify(messageData));
 
             return res.status(200).json({
                 message: "Message created successfully",
