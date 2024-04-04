@@ -19,9 +19,20 @@ initializeApp(firebaseConfig);
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage();
 
-const uploadFile = async (file, type) => {
-    const folder = type === 'product' ? 'auction-product' : 'avatar';
-    const storageRef = ref(storage, `${folder}/${uuidv4()}`);
+function getFolderByType(type) {
+    const typeToFolderMap = {
+        'product': 'auction-product',
+        'censor': 'censor-avatar',
+        'user': 'user-avatar',
+        'message': 'message-image'
+    };
+    return typeToFolderMap[type] || 'default-folder';
+}
+
+const uploadFile = async (file, type, userId) => {
+    const folder = getFolderByType(type);
+    const id = (type === 'product' || type === 'censor' || type === 'message') ? uuidv4() : userId;
+    const storageRef = ref(storage, `${folder}/${id}`);
 
     const metadata = {
         contentType: file.mimetype,
@@ -35,8 +46,7 @@ const uploadFile = async (file, type) => {
 }
 
 const uploadMultipleFile = async (files, type) => {
-    const folder = type === 'product' ? 'auction-product' : 'avatar';
-
+    const folder = getFolderByType(type);
     const uploadTasks = files.map(async (file) => {
         const storageRef = ref(storage, `${folder}/${uuidv4()}`);
         const metadata = { contentType: file.mimetype };
@@ -55,16 +65,22 @@ const uploadMultipleFile = async (files, type) => {
 }
 
 const deleteFile = async (imageId, type) => {
-    const folder = type === 'product' ? 'auction-product' : 'avatar';
+    const folder = getFolderByType(type);
     // Create a reference to the file to delete
     const desertRef = ref(storage, `${folder}/${imageId}`);
+
     // Delete the file
-    return await deleteObject(desertRef)
+    try {
+        return await deleteObject(desertRef)
+    } catch (error) {
+        if (error.code !== 'storage/object-not-found') {
+            throw error;
+        }
+    }
 }
 
 const deleteMultipleFile = async (imageIds, type) => {
-    const folder = type === 'product' ? 'auction-product' : 'avatar';
-
+    const folder = getFolderByType(type);
     // Create a reference to the file to delete
     const uploadTasks = imageIds.map(async (imageId) => {
         const desertRef = ref(storage, `${folder}/${imageId}`);
@@ -72,7 +88,13 @@ const deleteMultipleFile = async (imageIds, type) => {
     });
 
     // Delete the file
-    return await Promise.all(uploadTasks);
+    try {
+        return await Promise.all(uploadTasks);
+    } catch (error) {
+        if (error.code !== 'storage/object-not-found') {
+            throw error;
+        }
+    }
 }
 
 module.exports = {

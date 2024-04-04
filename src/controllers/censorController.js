@@ -4,22 +4,17 @@ const { validateRegisterCensor, validateAuctionSession } = require('../helpers/j
 class CensorController {
     async registerCensor(req, res) {
         try {
+            const user = req.user.dataValues
+            const avatar = req.file || 1;
             const { error } = validateRegisterCensor(req.body);
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            if (!req.file) {
-                return res.status(400).json({
-                    message: '\"avatar\" is required',
-                });
-            }
-            let avatar = req.file || null;
-            return await censorServices.register(req.body, avatar, res);
+            return await censorServices.register(user, req.body, avatar, res);
         } catch (error) {
             console.error("Error in registerCensor:", error);
-
         }
     }
 
@@ -55,7 +50,7 @@ class CensorController {
 
     async getAuctionByToken(req, res) {
         try {
-            return await censorServices.getAuctionsByToken( req?.user?.id,req.query, res);
+            return await censorServices.getAuctionsByToken(req?.user?.id, req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

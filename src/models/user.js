@@ -1,7 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../util/database");
-const Role = require('./role')
-const Wallet = require('./wallet');
+const sequelize = require("../config/database");
 
 const User = sequelize.define("user", {
     id: {
@@ -55,8 +53,5 @@ const User = sequelize.define("user", {
     tableName: 'user',
     timestamps: false
 });
-
-User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
-User.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' })
 
 module.exports = User;

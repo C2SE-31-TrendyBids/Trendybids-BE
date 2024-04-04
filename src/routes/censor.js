@@ -7,11 +7,11 @@ const { verifyToken, isAdmin, isCensor } = require("../middlewares/verifyToken")
 
 
 const upload = multer({ storage: multer.memoryStorage() });
-router.post("/register-censor", upload.single('avatar'), censorControllers.registerCensor);
 router.get("/get-auction-session", censorControllers.getAuctionByQuery);
 router.get("/get-censor", censorControllers.getCensorByQuery);
 
 router.use(verifyToken)
+router.post("/register-censor", upload.single('avatar'), censorControllers.registerCensor);
 router.use(isCensor)
 router.post('/approve-auction-product', censorControllers.approveAuctionProduct)
 router.get("/my-auction-session", censorControllers.getAuctionByToken);

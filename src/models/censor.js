@@ -1,9 +1,5 @@
-const sequelize = require("../util/database");
+const sequelize = require("../config/database");
 const { DataTypes } = require("sequelize");
-const User = require("./user");
-const Role = require("./role");
-const Wallet = require("./wallet");
-const ProductAuction = require("./productAuction");
 
 const Censor = sequelize.define("censor", {
     id: {
@@ -36,16 +32,13 @@ const Censor = sequelize.define("censor", {
     taxCodeIssuanceDate: DataTypes.DATE,
     position: DataTypes.STRING,
     placeTaxCode: DataTypes.STRING,
+    userId: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4
+    }
 }, {
     tableName: 'censor',
     timestamps: false
 });
-
-Censor.hasMany(ProductAuction, { foreignKey: 'censorId', as: 'productAuctions' });
-Censor.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user' });
-Censor.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' });
-Censor.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
-ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
-
 
 module.exports = Censor;

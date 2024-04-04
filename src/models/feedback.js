@@ -1,6 +1,5 @@
-const sequelize = require("../util/database");
-const {DataTypes} = require("sequelize");
-const User = require("./User");
+const sequelize = require("../config/database");
+const { DataTypes } = require("sequelize");
 
 const Feedback = sequelize.define("feedback", {
     id: {
@@ -24,7 +23,5 @@ const Feedback = sequelize.define("feedback", {
     tableName: 'feedback',
     timestamps: false
 });
-
-Feedback.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
 
 module.exports = Feedback;

@@ -4,7 +4,7 @@ const User = require('../models/user')
 const PrdImage = require('../models/prdImage')
 const Category = require('../models/category')
 const { Op } = require("sequelize");
-const { uploadMultipleFile, deleteMultipleFile } = require("../util/firebase.config");
+const { uploadMultipleFile, deleteMultipleFile } = require("../config/firebase.config");
 const prdImage = require("../models/prdImage");
 const censorServices = require("../services/censorService")
 

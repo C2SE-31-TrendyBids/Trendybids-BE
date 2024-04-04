@@ -2,7 +2,7 @@ const joi = require("joi");
 
 const validateRegister = (body) => {
     return joi.object({
-        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
         password: joi.string().min(6).required(),
         fullName: joi.string().min(3).max(30).required(),
     }).validate(body)
@@ -22,27 +22,27 @@ const validateRegisterCensor = (body) => {
 
 const validateVerify = (body) => {
     return joi.object({
-        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
         otp: joi.string().min(6).max(6).required(),
     }).validate(body)
 }
 
 const validateLogin = (body) => {
     return joi.object({
-        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
 }
 
 const validateForgotPassword = (body) => {
     return joi.object({
-        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
     }).validate(body)
 }
 
 const validateResetPassword = (body) => {
     return joi.object({
-        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
         otp: joi.string().min(6).max(6).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
@@ -95,6 +95,23 @@ const validateBidPrice = (body) => {
     }).validate(body)
 }
 
+const validateEditUser = (body) => {
+    return joi.object({
+        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}),
+        fullName: joi.string().min(3).max(30),
+        phoneNumber: joi.string().min(10).max(11),
+        address: joi.string().min(5),
+        status: joi.string().min(3).max(10),
+    }).validate(body)
+}
+
+const validateCreateConversation = (body) => {
+    return joi.object({
+        recipientId: joi.string().required(),
+        content: joi.string().required(),
+    }).validate(body)
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -105,5 +122,7 @@ module.exports = {
     validateUpdateProduct,
     validateRegisterCensor,
     validateAuctionSession,
-    validateBidPrice
+    validateBidPrice,
+    validateEditUser,
+    validateCreateConversation
 }
