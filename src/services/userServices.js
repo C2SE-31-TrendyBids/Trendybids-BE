@@ -2,7 +2,6 @@ const ProductAuction = require('../models/productAuction')
 const UserParticipant = require('../models/userParticipant')
 const AuctionHistory = require('../models/auctionHistory')
 const {Sequelize} = require("sequelize");
-const Censor = require("../models/censor");
 const User = require("../models/user");
 
 class UserServices {
@@ -43,12 +42,12 @@ class UserServices {
         }
     }
 
-    async getAllAuctionPrice({page, limit, sessionId}, res) {
+    async getAllAuctionPrice({page, limit} , sessionId, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
-            const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
+            const limitNumber = isNaN(parseInt(limit)) ? 6 : parseInt(limit);
             // If pageNumber is less than 1, set it to 1
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             // Calculate the offset
@@ -73,7 +72,7 @@ class UserServices {
 
             return res.status(200).json({
                 message: 'Get all auction price successfully!',
-                totalBids:count,
+                totalBids: count,
                 auctionPrices: rows
             });
         } catch (error) {
@@ -82,20 +81,30 @@ class UserServices {
         }
     }
 
-    async getTheNecessaryDataInSession({sessionId}, res) {
+
+    async getHighestPrice(sessionId) {
+        const latestHighestPrice = await AuctionHistory.findOne({
+            where: {
+                productAuctionId: sessionId
+            },
+            order: [['createdAt', 'DESC']],
+            attributes: ['auctionPrice']
+        });
+        return latestHighestPrice?.auctionPrice
+    }
+
+    async getTheNecessaryDataInSession(sessionId, res) {
         try {
-            const highestPrice = await AuctionHistory.max('auctionPrice', {
-                where: { productAuctionId: sessionId }
-            });
+            const highestPrice = await this.getHighestPrice(sessionId);
 
             const numberOfParticipants = await UserParticipant.count({
                 distinct: true,
-                where: { productAuctionId: sessionId }
+                where: {productAuctionId: sessionId}
             });
 
             return res.status(200).json({
                 numberOfParticipants,
-                highestPrice
+                highestPrice: highestPrice ? highestPrice : null
             });
         } catch (error) {
             console.error("Error in getAllAuctionPrice:", error);
@@ -103,18 +112,44 @@ class UserServices {
         }
     }
 
-    async placeABid(userId, {sessionId}, res) {
+    async placeABid(userId, {bidPrice , sessionId}, res) {
         try {
-            const queries = {raw: false, nest: true};
-            const auctionPrices = await AuctionHistory.findAll({
-                where: {productAuctionId: sessionId},
-                ...queries,
-                attributes: {exclude: ['userId']},
-
+            // handle check user in party
+            const participant = await UserParticipant.findOne({
+                where: {userId, productAuctionId: sessionId}
             })
+            if (!participant) {
+                return res.status(400).json({
+                    message: "User is not in this auction!",
+                });
+            }
+            // handle check bid price
+            const highestPrice = await this.getHighestPrice(sessionId);
+            if (bidPrice <= highestPrice) {
+                return res.status(400).json({
+                    message: "Bid price must be greater than the current highest price!",
+                });
+            }
 
-            return res.status(200).json({
-                auctionPrices
+            const updateHighestPrice = ProductAuction.update({
+                highestPrice: bidPrice
+            }, {
+                where: {
+                    id: sessionId
+                }
+            });
+
+            const createAuctionHistory = AuctionHistory.create({
+                auctionPrice: bidPrice,
+                productAuctionId: sessionId,
+                userId: userId
+            });
+
+            await Promise.all([updateHighestPrice, createAuctionHistory]);
+
+            return res.status(201).json({
+                message: 'Place a bid successfully!',
+                bidPrice: bidPrice
             });
         } catch (error) {
             console.error("Error in getAllAuctionPrice:", error);

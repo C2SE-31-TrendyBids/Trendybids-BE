@@ -1,4 +1,6 @@
 const userServices = require('../services/userServices')
+const {validateBidPrice} = require("../helpers/joiSchema");
+
 class UserController {
     getCurrentUser(req, res) {
         try {
@@ -29,10 +31,15 @@ class UserController {
         }
     }
 
-
     getAllAuctionPriceInSession(req, res) {
         try {
-            return userServices.getAllAuctionPrice(req.query, res);
+            const sessionId = req.params.sessionId
+            if (!sessionId) {
+                return res.status(400).json({
+                    message: '\"sessionId\" is required',
+                });
+            }
+            return userServices.getAllAuctionPrice(req.query, sessionId, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -43,7 +50,13 @@ class UserController {
 
     getTheNecessaryDataInSession(req, res) {
         try {
-            return userServices.getTheNecessaryDataInSession(req.query, res);
+            const sessionId = req.params.sessionId
+            if (!sessionId) {
+                return res.status(400).json({
+                    message: '\"sessionId\" is required',
+                });
+            }
+            return userServices.getTheNecessaryDataInSession(sessionId, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -54,7 +67,19 @@ class UserController {
 
     placeABid(req, res) {
         try {
-            return userServices.placeABid(req.user?.id, req.query, res);
+            const sessionId = req.body.sessionId
+            if (!sessionId) {
+                return res.status(400).json({
+                    message: '\"sessionId\" is required',
+                });
+            }
+            // handle check input bid price
+            const {error} = validateBidPrice({bidPrice: req.body.bidPrice});
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return userServices.placeABid(req.user?.id, req.body, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

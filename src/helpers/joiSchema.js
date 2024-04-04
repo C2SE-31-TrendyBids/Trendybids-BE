@@ -89,6 +89,12 @@ const validateAuctionSession = (body, type = "post") => {
     }
 }
 
+const validateBidPrice = (body) => {
+    return joi.object({
+        bidPrice: joi.number().required(),
+    }).validate(body)
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -98,5 +104,6 @@ module.exports = {
     validateAuctionProduct,
     validateUpdateProduct,
     validateRegisterCensor,
-    validateAuctionSession
+    validateAuctionSession,
+    validateBidPrice
 }
