@@ -19,9 +19,19 @@ initializeApp(firebaseConfig);
 // Initialize Cloud Storage and get a reference to the service
 const storage = getStorage();
 
+function getFolderByType(type) {
+    const typeToFolderMap = {
+        'product': 'auction-product',
+        'censor': 'censor-avatar',
+        'user': 'user-avatar',
+        'message': 'message-image'
+    };
+    return typeToFolderMap[type] || 'default-folder';
+}
+
 const uploadFile = async (file, type, userId) => {
-    const folder = type === 'product' ? 'auction-product' : type === 'censor' ? 'censor-avatar' : 'user-avatar';
-    const id = (type === 'product' || type === 'censor') ? uuidv4() : userId;
+    const folder = getFolderByType(type);
+    const id = (type === 'product' || type === 'censor' || type === 'message') ? uuidv4() : userId;
     const storageRef = ref(storage, `${folder}/${id}`);
 
     const metadata = {
@@ -36,8 +46,7 @@ const uploadFile = async (file, type, userId) => {
 }
 
 const uploadMultipleFile = async (files, type) => {
-    const folder = type === 'product' ? 'auction-product' : type === 'censor' ? 'censor-avatar' : 'user-avatar';
-
+    const folder = getFolderByType(type);
     const uploadTasks = files.map(async (file) => {
         const storageRef = ref(storage, `${folder}/${uuidv4()}`);
         const metadata = { contentType: file.mimetype };
@@ -56,7 +65,7 @@ const uploadMultipleFile = async (files, type) => {
 }
 
 const deleteFile = async (imageId, type) => {
-    const folder = type === 'product' ? 'auction-product' : type === 'censor' ? 'censor-avatar' : 'user-avatar';
+    const folder = getFolderByType(type);
     // Create a reference to the file to delete
     const desertRef = ref(storage, `${folder}/${imageId}`);
 
@@ -71,8 +80,7 @@ const deleteFile = async (imageId, type) => {
 }
 
 const deleteMultipleFile = async (imageIds, type) => {
-    const folder = type === 'product' ? 'auction-product' : type === 'censor' ? 'censor-avatar' : 'user-avatar';
-
+    const folder = getFolderByType(type);
     // Create a reference to the file to delete
     const uploadTasks = imageIds.map(async (imageId) => {
         const desertRef = ref(storage, `${folder}/${imageId}`);

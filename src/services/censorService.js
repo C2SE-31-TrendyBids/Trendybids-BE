@@ -61,7 +61,7 @@ class CensorService {
     }
 
 
-    async getCensors({ page, limit, order, ...query }, res) {
+    async getCensors({ page, limit, order, name, ...query }, res) {
         try {
             const queries = { raw: false, nest: true };
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -77,6 +77,7 @@ class CensorService {
             if (order) queries.order = [order];
             // order of product
             const censorQuery = {
+                ...(name ? { name: { [Op.iLike]: `${name}%` } } : {}),
                 ...query
             };
 

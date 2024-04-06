@@ -1,24 +1,23 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
 
-const MemberOrganization = sequelize.define('member_organization', {
+const converParticipant = sequelize.define("converParticipant", {
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
         primaryKey: true,
-    },
-    userId: {
+    },userId: {
         type: DataTypes.UUID,
         field: 'user_id',
     },
-    censorId: {
+    conversationId: {
         type: DataTypes.UUID,
-        field: 'censor_id',
+        field: 'conversation_id',
     },
 }, {
-    tableName: 'member_organization',
+    tableName: 'conver_participant',
     timestamps: false
 })
 
-module.exports = MemberOrganization;
+module.exports = converParticipant;

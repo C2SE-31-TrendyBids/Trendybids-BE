@@ -1,6 +1,5 @@
 const sequelize = require("../config/database");
 const {DataTypes} = require("sequelize");
-const User = require("./user");
 
 const Payment = sequelize.define("payment", {
     id: {
@@ -23,6 +22,5 @@ const Payment = sequelize.define("payment", {
     timestamps: false
 });
 
-Payment.belongsTo(User, {foreignKey: 'userId', targetKey: 'id', as: 'user'})
 
 module.exports = Payment;

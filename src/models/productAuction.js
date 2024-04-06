@@ -1,6 +1,6 @@
 const sequelize = require("../config/database");
 const { DataTypes } = require("sequelize");
-const Product = require("./product");
+const AuctionHistory = require("./auctionHistory");
 
 const ProductAuction = sequelize.define("product_auction", {
     id: {
@@ -56,5 +56,8 @@ const ProductAuction = sequelize.define("product_auction", {
     createdAt: 'createdAt',
     updatedAt: false
 });
+
+ProductAuction.hasMany(AuctionHistory, { foreignKey: 'productAuctionId', as: 'auctionHistory' });
+
 
 module.exports = ProductAuction;

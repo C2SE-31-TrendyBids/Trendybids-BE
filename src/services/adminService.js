@@ -2,8 +2,8 @@ const Censor = require('../models/censor')
 const User = require('../models/user')
 const Role = require('../models/role')
 const MemberOrganization = require('../models/memberOrganization')
-const {Op, where} = require("sequelize");
-const {uploadFile, deleteFile, deleteMultipleFile} = require("../config/firebase.config");
+const { Op, where } = require("sequelize");
+const { uploadFile, deleteFile, deleteMultipleFile } = require("../config/firebase.config");
 const sendEmail = require('../util/sendMail')
 const readFileTemplate = require('../helpers/readFileTemplate')
 
@@ -13,8 +13,8 @@ class AdminService {
         try {
             // Check if Censor is not found
             const censor = await Censor.findOne({
-                where: {id: censorId},
-                attributes: {exclude: ['walletId', 'userId']},
+                where: { id: censorId },
+                attributes: { exclude: ['walletId', 'userId'] },
                 include: [
                     { model: User, as: 'user', attributes: ['id', 'email', 'fullName'] }
                 ]
@@ -24,7 +24,7 @@ class AdminService {
                     message: "Censor is not found"
                 })
             } else if (censor.status === "Verified") {
-                return res.status(400).json({message: "Censor is Verified"});
+                return res.status(400).json({ message: "Censor is Verified" });
             }
 
             // Type = 1: Approve Censor, Type = 2: Reject Censor
@@ -33,7 +33,7 @@ class AdminService {
                 censor.status = "Verified"
                 await Promise.all([
                     MemberOrganization.findOrCreate({
-                        where: {userId: censor.user.id, id: censorId},
+                        where: { userId: censor.user.id, id: censorId },
                         defaults: {
                             userId: censor.user.id,
                             censorId: censor.id
@@ -67,9 +67,9 @@ class AdminService {
         }
     }
 
-    async getUsers({page, limit, order, fullName, roleId, status}, res) {
+    async getUsers({ page, limit, order, fullName, roleId, status, email }, res) {
         try {
-            const queries = {raw: true, nes: true}
+            const queries = { raw: true, nes: true }
 
             page = parseInt(page) || 1
             limit = parseInt(limit) || 10
@@ -79,20 +79,21 @@ class AdminService {
             if (order) queries.order = [order]
 
             const userQuery = {
-                ...(fullName ? {fullName: {[Op.iLike]: `${fullName}%`}} : {}),
-                ...(status ? {status} : {}),
+                ...(fullName ? { fullName: { [Op.iLike]: `${fullName}%` } } : {}),
+                ...(email ? { email: { [Op.iLike]: `${email}%` } } : {}),
+                ...(status ? { status } : {}),
             }
 
-            const {count, rows} = await User.findAndCountAll({
+            const { count, rows } = await User.findAndCountAll({
                 where: userQuery,
                 limit,
                 offset,
                 order: queries.order,
-                attributes: {exclude: ['password', 'roleId', 'refreshToken', 'walletId']},
+                attributes: { exclude: ['password', 'roleId', 'refreshToken', 'walletId'] },
                 include: [
                     {
                         model: Role, as: 'role',
-                        where: roleId ? {id: roleId} : {}
+                        where: roleId ? { id: roleId } : {}
                     }
                 ]
             })
@@ -110,7 +111,7 @@ class AdminService {
     async editUser(userId, body, avatar, res) {
         try {
             const user = await User.findOne({
-                where: {id: userId}
+                where: { id: userId }
             })
             if (!user) {
                 return res.status(404).json({
@@ -119,7 +120,7 @@ class AdminService {
             }
 
             if (avatar) {
-                const avatarUpload = await uploadFile(avatar, 'user-avatar', userId)
+                const avatarUpload = await uploadFile(avatar, 'user', userId)
                 body.avatar = avatarUpload.url
             }
 
@@ -139,14 +140,14 @@ class AdminService {
     async deleteUser(userId, res) {
         try {
             const user = await User.destroy({
-                where: {id: userId},
+                where: { id: userId },
             });
 
             // Delete user avatar in Firebase
             if (user > 0) {
                 Array.isArray(userId)
-                    ? await deleteMultipleFile(userId, 'user-avatar')
-                    : await deleteFile(userId, 'user-avatar');
+                    ? await deleteMultipleFile(userId, 'user')
+                    : await deleteFile(userId, 'user');
             }
 
             const status = user > 0 ? 200 : 404;
