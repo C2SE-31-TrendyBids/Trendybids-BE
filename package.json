@@ -31,6 +31,7 @@
     "pg-hstore": "^2.3.4",
     "process": "^0.11.10",
     "pug": "2.0.0-beta11",
+    "react-helmet": "^6.1.0",
     "sequelize": "^6.37.1",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1"
