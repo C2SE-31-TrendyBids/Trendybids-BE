@@ -3,7 +3,6 @@ const UserParticipant = require("../models/userParticipant");
 const { Sequelize } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const AuctionHistory = require("../models/auctionHistory");
-const { Sequelize } = require("sequelize");
 const User = require("../models/user");
 
 class UserServices {
@@ -94,41 +93,6 @@ class UserServices {
                 bcrypt.genSaltSync(8)
             );
             await user.update({ password: hashPassword });
-        } catch (error) {
-            throw new Error(error);
-        }
-    }
-    async joinAuctionSession(userId, sessionId, res) {
-        try {
-            const participant = await UserParticipant.findOne({
-                where: { userId, productAuctionId: sessionId },
-            });
-            if (participant) {
-                return res.status(400).json({
-                    message: "The user has participated in this auction",
-                });
-            }
-
-            await Promise.all([
-                UserParticipant.create({
-                    userId,
-                    productAuctionId: sessionId,
-                }),
-                ProductAuction.update(
-                    {
-                        numberOfParticipation: Sequelize.literal(
-                            "number_of_participation + 1"
-                        ),
-                    },
-                    {
-                        where: { id: sessionId },
-                    }
-                ),
-            ]);
-
-            return res.status(200).json({
-                message: "Join to auction session successfully",
-            });
         } catch (error) {
             throw new Error(error);
         }
