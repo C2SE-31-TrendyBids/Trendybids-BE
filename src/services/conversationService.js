@@ -10,8 +10,8 @@ const sequelize = require('../config/database');
 class ConversationService {
     async getConversations({page, limit}, userId, res) {
         try {
-            page = parseInt(page) || 1
-            limit = parseInt(limit) || 10
+            page = parseInt(page) || null
+            limit = parseInt(limit) || null
             const offset = (page - 1) * limit
 
             const participants = await ConverParticipant.findAll({
@@ -40,7 +40,7 @@ class ConversationService {
                     {
                         model: Message,
                         as: 'messages',
-                        attributes: ['id', 'content', 'imgUrls', 'createdAt'],
+                        attributes: ['id', 'content', 'filesAttach', 'createdAt'],
                         where: {
                             createdAt: {
                                 [Op.eq]: sequelize.literal(`(SELECT MAX("created_at") FROM "message" WHERE "conversation_id" = "conversation"."id")`)
@@ -48,12 +48,13 @@ class ConversationService {
                         },
                         include: { model: User, as: 'user', attributes: ['id', 'fullName', 'avatarUrl'] }
                     }
-                ]
+                ],
+                order: [[{ model: Message, as: 'messages' }, 'createdAt', 'DESC']]
             });
 
             return res.json({
                 message: "Success",
-                conversations: this.optimizeDataConversation(conversations, userId),
+                conversations: conversations.length > 0 ? this.optimizeDataConversation(conversations, userId) : [],
                 totalItem: conversations.length,
             });
         } catch (error) {
@@ -61,7 +62,7 @@ class ConversationService {
         }
     }
 
-    async createConversation({recipientId, content, files}, userId, res) {
+    async createConversation({recipientId, content}, files, userId, res) {
        try {
            const recipient = await User.findOne({
                where: {

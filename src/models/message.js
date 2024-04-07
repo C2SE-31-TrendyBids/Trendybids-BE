@@ -9,9 +9,9 @@ const Message = sequelize.define("message", {
         primaryKey: true,
     },
     content: DataTypes.TEXT,
-    imgUrls: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        field: 'img_urls',
+    filesAttach: {
+        type: DataTypes.JSON(),
+        field: 'files_attach',
         allowNull: true
     },
     createdAt: {

@@ -7,7 +7,7 @@ const multer = require("multer");
 const upload = multer({storage: multer.memoryStorage()})
 
 router.use(verifyToken)
-router.post("/create", upload.array('images'), MessageController.createMessage);
+router.post("/create", upload.array('filesAttach'), MessageController.createMessage);
 router.get("/messages/:conversationId", MessageController.getMessagesInConversation);
 
 module.exports = router;
