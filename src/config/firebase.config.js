@@ -75,6 +75,7 @@ const uploadMultipleFile = async (files, type) => {
         ])
         return {
             id,
+            type: file.mimetype,
             name: file.originalname,
             url,
         }
