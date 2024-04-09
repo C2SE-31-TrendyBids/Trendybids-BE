@@ -178,6 +178,26 @@ class AuthService {
             throw new Error(error)
         }
     }
+
+    async logout(userId, res) {
+        try {
+            const user = await User.findByPk(userId)
+            if (!user) {
+                return res.status(404).json({
+                    message: "User is not found"
+                });
+            }
+
+            user.refreshToken = null;
+            await user.save()
+
+            return res.status(200).json({
+                message: "Logout successfully"
+            });
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 }
 
 
