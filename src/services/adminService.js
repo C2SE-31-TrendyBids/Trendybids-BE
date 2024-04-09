@@ -118,12 +118,10 @@ class AdminService {
                     message: "User is not found"
                 })
             }
-
             if (avatar) {
                 const avatarUpload = await uploadFile(avatar, 'user', userId)
                 body.avatar = avatarUpload.url
             }
-
             // Update user information
             await user.update({
                 ...body
@@ -156,6 +154,18 @@ class AdminService {
             })
         } catch (error) {
             throw new Error(error)
+        }
+    }
+    async getAllRoles() {
+        try {
+            const roles = await Role.findAll()
+            const totalItem = roles.length;
+            return {
+                roles: roles,
+                totalItem: totalItem
+            };
+        } catch (error) {
+            throw error;
         }
     }
 }

@@ -2,7 +2,7 @@ const joi = require("joi");
 
 const validateRegister = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
         password: joi.string().min(6).required(),
         fullName: joi.string().min(3).max(30).required(),
     }).validate(body)
@@ -22,27 +22,27 @@ const validateRegisterCensor = (body) => {
 
 const validateVerify = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
         otp: joi.string().min(6).max(6).required(),
     }).validate(body)
 }
 
 const validateLogin = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
 }
 
 const validateForgotPassword = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
     }).validate(body)
 }
 
 const validateResetPassword = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
         otp: joi.string().min(6).max(6).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
@@ -97,11 +97,12 @@ const validateBidPrice = (body) => {
 
 const validateEditUser = (body) => {
     return joi.object({
-        email: joi.string().email({minDomainSegments: 2, tlds: {allow: ["com"]}}),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }),
         fullName: joi.string().min(3).max(30),
         phoneNumber: joi.string().min(10).max(11),
         address: joi.string().min(5),
-        status: joi.string().min(3).max(10),
+        status: joi.string().valid('Pre-Active', 'Active', 'Suspended'),
+        roleId: joi.string().valid('R01', 'R02', 'R03')
     }).validate(body)
 }
 

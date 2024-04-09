@@ -37,8 +37,9 @@ class AdminController {
 
     editUser(req, res) {
         try {
-            const userId = req.params.userId;
+            const userId = req.query.userId;
             const { error } = validateEditUser(req.body);
+
             if (error)
                 return res.status(400).json({
                     message: error.details[0].message,
@@ -59,6 +60,7 @@ class AdminController {
     deleteUser(req, res) {
         try {
             const userId = req.query.userId;
+            console.log(userId);
             if (!userId) {
                 return res.status(400).json({
                     message: '\"userId\" is required',
@@ -69,6 +71,14 @@ class AdminController {
             return res.status(500).json({
                 message: "Internal Server Error",
             });
+        }
+    }
+    async getAllRolesController(req, res) {
+        try {
+            const rolesData = await adminServices.getAllRoles()
+            return res.status(200).json(rolesData);
+        } catch (error) {
+            return res.status(500).json({ error: 'Internal server error' });
         }
     }
 }
