@@ -69,9 +69,10 @@ class MessageService {
             const uploadFileAttach = await uploadMultipleFile(files, 'message')
             filesAttach = uploadFileAttach.map(item => {
                 return {
-                    id: item.id,
+                    id: item.id.split('.')[0],
                     name: item.name,
-                    url: item.url
+                    url: item.url,
+                    type: item.type
                 }
             });
         }

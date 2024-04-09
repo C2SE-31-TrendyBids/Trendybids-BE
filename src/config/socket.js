@@ -34,7 +34,7 @@ const initSocket = (server) => {
 
     io.on('connection', (socket) => {
         console.log("New Incoming Connection:", socket.user.id);
-        socket.emit('Connected', {status: 'good'})
+        socket.emit('connected', {status: 'good'})
         // Save client connected to map
         connectedClients.set(socket.user.id, socket);
 
@@ -66,11 +66,10 @@ const initSocket = (server) => {
             socket.to(payload.conversationId).emit('onTypingStart');
         })
 
-        socket.on('onConversationJoin', (payload) => {
-            socket.join(payload.conversationId);
-            console.log("onConversationJoin", socket.rooms)
+        socket.on('onConversationLeave', (payload) => {
+            socket.leave(payload.conversationId);
+            console.log("onConversationLeave", socket.rooms)
         })
-
 
         socket.on('disconnect', () => {
             console.log(`Disconnected: ${socket.id}`);
