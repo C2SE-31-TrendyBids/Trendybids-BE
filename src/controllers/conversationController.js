@@ -18,7 +18,7 @@ class ConversationController {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
-            return conversationServices.createConversation(req.body, req.user.id, res)
+            return conversationServices.createConversation(req.body, req.files, req.user.id, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

@@ -12,6 +12,8 @@ router.get("/get-all", productControllers.getProductByQuery);
 router.post("/post-product", upload.array('prdImageURL'), productControllers.postAuctionProduct);
 router.put("/update-product/:productId", upload.array('prdImageURL'), productControllers.updateAuctionProduct);
 router.delete("/delete-product/:productId", productControllers.deleteAuctionProduct);
+router.delete("/delete-image/:imageId", productControllers.deleteImage);
+
 
 
 module.exports = router;

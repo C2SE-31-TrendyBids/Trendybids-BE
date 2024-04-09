@@ -64,17 +64,23 @@ class MessageService {
     }
 
     async saveMessage(files, conversationId, content, userId) {
-        let imgUrls = [];
+        let filesAttach = [];
         if (files && files.length > 0) {
-            const uploadImages = await uploadMultipleFile(files, 'message')
-            imgUrls = uploadImages.map(item => item.url);
+            const uploadFileAttach = await uploadMultipleFile(files, 'message')
+            filesAttach = uploadFileAttach.map(item => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                    url: item.url
+                }
+            });
         }
 
         const newMessage = await Message.create({
             conversationId,
             content,
             userId,
-            imgUrls
+            filesAttach
         })
 
         // Get inserted message data

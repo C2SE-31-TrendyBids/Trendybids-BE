@@ -34,7 +34,22 @@ class ProductController {
             });
         }
     }
+    async deleteImage (req, res){
+        const { imageId } = req.params;
+        if(!imageId)  { 
+            return res.status(400).json({
+            message: '\"imageId\" is required',
+        })}
 
+        try {
+           return await productServices.deleteImageProduct(imageId, res);
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Internal server error",
+            });
+        }
+    };
     async updateAuctionProduct(req, res) {
         try {
             const productId = req.params.productId
