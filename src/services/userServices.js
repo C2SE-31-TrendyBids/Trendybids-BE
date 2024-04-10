@@ -3,7 +3,6 @@ const UserParticipant = require("../models/userParticipant");
 const { Sequelize } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const AuctionHistory = require("../models/auctionHistory");
-const { Sequelize } = require("sequelize");
 const User = require("../models/user");
 
 class UserServices {
