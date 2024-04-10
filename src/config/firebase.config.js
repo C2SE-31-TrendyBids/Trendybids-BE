@@ -1,13 +1,7 @@
 const { initializeApp } = require("firebase/app");
-const {
-  getStorage,
-  ref,
-  getDownloadURL,
-  uploadBytesResumable,
-  deleteObject,
-  getMetadata,
-} = require("firebase/storage");
-const { v4: uuidv4 } = require("uuid");
+const { getStorage, collection, query, where, getDocs, ref, getDownloadURL, uploadBytesResumable, deleteObject, getMetadata  } = require("firebase/storage");
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 require("dotenv").config();
 
 const firebaseConfig = {
@@ -36,6 +30,20 @@ function getFolderByType(type) {
   };
   return typeToFolderMap[type] || "default-folder";
 }
+
+const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+const convertStorageRef = (file, folder, type) => {
+    const extension = path.extname(file.originalname);
+    let storageRef;
+    if (!imageTypes.includes(file.mimetype)) {
+        storageRef = ref(storage, `${folder}/${file.originalname}`);
+    } else {
+        const name = type === 'message' ? `${uuidv4()}${extension}` : uuidv4();
+        storageRef = ref(storage, `${folder}/${name}`);
+    }
+    return storageRef;
+}
+
 
 const uploadFile = async (file, type, userId) => {
   const folder = getFolderByType(type);
@@ -91,12 +99,16 @@ const deleteFile = async (imageId, type) => {
 };
 
 const deleteMultipleFile = async (imageIds, type) => {
-  const folder = getFolderByType(type);
-  // Create a reference to the file to delete
-  const uploadTasks = imageIds.map(async (imageId) => {
-    const desertRef = ref(storage, `${folder}/${imageId}`);
-    return deleteObject(desertRef);
-  });
+    const folder = getFolderByType(type);
+    // Create a reference to the file to delete
+    const uploadTasks = imageIds.map(async (imageId) => {
+        // Query Firestore to get the full file name
+        const q = query(collection(storage, folder), where("id", "==", imageId));
+        const querySnapshot = await getDocs(q);
+
+        const desertRef = ref(storage, `${folder}/${imageId}`);
+        return deleteObject(desertRef)
+    });
 
   // Delete the file
   try {
