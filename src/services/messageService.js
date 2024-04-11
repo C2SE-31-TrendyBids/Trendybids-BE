@@ -43,8 +43,8 @@ class MessageService {
                     conversationId,
                     ...(keyword ? { content: { [Op.iLike]: `%${keyword}%` } } : {})
                 },
-                // limit,
-                // offset,
+                limit,
+                offset,
                 order: [['createdAt', 'DESC']],
                 attributes: {exclude: ['userId']},
                 include: {

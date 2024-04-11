@@ -3,6 +3,8 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const { verifyToken } = require("../middlewares/verifyToken");
 
+router.get("/search", userController.searchUser);
+
 router.use(verifyToken);
 router.get("/me", verifyToken, userController.getCurrentUser);
 router.put("/edit-user", verifyToken, userController.editUser);
