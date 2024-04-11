@@ -124,6 +124,16 @@ class UserController {
             });
         }
     }
+
+    searchUser(req, res) {
+        try {
+            return userServices.searchUser(req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
 }
 
 module.exports = new UserController();

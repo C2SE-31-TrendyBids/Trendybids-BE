@@ -6,6 +6,8 @@ const multer = require("multer");
 const { uploadFile } = require("../config/firebase.config");
 const User = require("../models/user");
 
+router.get("/search", userController.searchUser);
+
 router.use(verifyToken);
 
 const upload = multer({ storage: multer.memoryStorage() });

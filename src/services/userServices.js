@@ -1,6 +1,6 @@
 const ProductAuction = require("../models/productAuction");
 const UserParticipant = require("../models/userParticipant");
-const { Sequelize } = require("sequelize");
+const { Sequelize, Op} = require("sequelize");
 const bcrypt = require("bcryptjs");
 const AuctionHistory = require("../models/auctionHistory");
 const User = require("../models/user");
@@ -214,6 +214,21 @@ class UserServices {
             console.error("Error in getAllAuctionPrice:", error);
             throw new Error(error);
         }
+    }
+
+    async searchUser({ keyword }, res) {
+        const users = await User.findAll({
+            where: {
+                roleId: { [Op.not]: "R03" },
+                fullName: { [Op.iLike]: `%${keyword || null}%` },
+            },
+            attributes: ['id', 'email', 'fullName', 'avatarUrl'],
+        })
+        return res.status(200).json({
+            message: 'Success',
+            totalItem: users.length,
+            users: users,
+        })
     }
 }
 
