@@ -4,7 +4,7 @@ const User = require('../models/user')
 const PrdImage = require('../models/prdImage')
 const Category = require('../models/category')
 const { Op } = require("sequelize");
-const { uploadMultipleFile, deleteMultipleFile,deleteFile } = require("../config/firebase.config");
+const { uploadMultipleFile, deleteMultipleFile, deleteFile } = require("../config/firebase.config");
 const prdImage = require("../models/prdImage");
 const censorServices = require("../services/censorService")
 
@@ -116,7 +116,7 @@ class ProductServices {
             // Xóa ảnh khỏi Firebase
             const deleteImageInFirebase = await deleteFile(imageId, 'product');
             console.log(deleteImageInFirebase);
-    
+
             // Tìm và xóa ảnh trong cơ sở dữ liệu
             const imageToDelete = await prdImage.findOne({ where: { id: imageId } });
             if (imageToDelete) {
