@@ -63,7 +63,7 @@ const initSocket = (server) => {
         })
 
         socket.on('onTypingStop', (payload) => {
-            socket.to(payload.conversationId).emit('onTypingStart');
+            socket.to(payload.conversationId).emit('onTypingStop');
         })
 
         socket.on('onConversationLeave', (payload) => {
