@@ -40,6 +40,7 @@ class AdminService {
                         }
                     }),
                     censor.save(),
+                    User.update({ roleId: 'R02' }, { where: { id: censor.user.id } }),
                     sendEmail({
                         email: censor.user.email,
                         subject: "<\Notification\> Auction Organization successfully verified - TrendyBids",
