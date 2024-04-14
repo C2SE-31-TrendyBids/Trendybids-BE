@@ -34,8 +34,8 @@ class MessageService {
 
     async getMessagesInConversation({ page, limit, keyword }, conversationId, userId, res) {
         try {
-            page = parseInt(page) || 1
-            limit = parseInt(limit) || 10
+            page = parseInt(page) || null
+            limit = parseInt(limit) || null
             const offset = (page - 1) * limit
 
             const messages = await Message.findAll({
