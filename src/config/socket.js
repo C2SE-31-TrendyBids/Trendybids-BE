@@ -72,14 +72,13 @@ const initSocket = (server) => {
         })
 
         socket.on('onTypingStop', (payload) => {
-            socket.to(payload.conversationId).emit('onTypingStart');
+            socket.to(payload.conversationId).emit('onTypingStop');
         })
 
-        socket.on('onConversationJoin', (payload) => {
-            socket.join(payload.conversationId);
-            console.log("onConversationJoin", socket.rooms)
+        socket.on('onConversationLeave', (payload) => {
+            socket.leave(payload.conversationId);
+            console.log("onConversationLeave", socket.rooms)
         })
-
 
         socket.on('disconnect', () => {
             console.log(`Disconnected: ${socket.id}`);

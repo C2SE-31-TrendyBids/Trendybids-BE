@@ -34,8 +34,8 @@ class MessageService {
 
     async getMessagesInConversation({ page, limit, keyword }, conversationId, userId, res) {
         try {
-            page = parseInt(page) || 1
-            limit = parseInt(limit) || 10
+            page = parseInt(page) || null
+            limit = parseInt(limit) || null
             const offset = (page - 1) * limit
 
             const messages = await Message.findAll({
@@ -43,8 +43,8 @@ class MessageService {
                     conversationId,
                     ...(keyword ? { content: { [Op.iLike]: `%${keyword}%` } } : {})
                 },
-                // limit,
-                // offset,
+                limit,
+                offset,
                 order: [['createdAt', 'DESC']],
                 attributes: {exclude: ['userId']},
                 include: {
@@ -64,17 +64,24 @@ class MessageService {
     }
 
     async saveMessage(files, conversationId, content, userId) {
-        let imgUrls = [];
+        let filesAttach = [];
         if (files && files.length > 0) {
-            const uploadImages = await uploadMultipleFile(files, 'message')
-            imgUrls = uploadImages.map(item => item.url);
+            const uploadFileAttach = await uploadMultipleFile(files, 'message')
+            filesAttach = uploadFileAttach.map(item => {
+                return {
+                    id: item.id.split('.')[0],
+                    name: item.name,
+                    url: item.url,
+                    type: item.type
+                }
+            });
         }
 
         const newMessage = await Message.create({
             conversationId,
             content,
             userId,
-            imgUrls
+            filesAttach
         })
 
         // Get inserted message data

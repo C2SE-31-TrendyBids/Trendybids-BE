@@ -6,6 +6,7 @@ const censor = require('./censor')
 const category = require('./category')
 const conversation = require('./conversation')
 const message = require('./message')
+const statistical = require('./statistical')
 
 const initRoutes = (app) => {
   // Example
@@ -17,6 +18,7 @@ const initRoutes = (app) => {
   app.use("/api/category", category);
   app.use("/api/conversation", conversation);
   app.use("/api/message", message);
+  app.use("/api/statistical", statistical);
 
   app.use((req, res) => {
     res.status(200).json({

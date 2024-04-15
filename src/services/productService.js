@@ -4,7 +4,7 @@ const User = require('../models/user')
 const PrdImage = require('../models/prdImage')
 const Category = require('../models/category')
 const { Op } = require("sequelize");
-const { uploadMultipleFile, deleteMultipleFile } = require("../config/firebase.config");
+const { uploadMultipleFile, deleteMultipleFile, deleteFile } = require("../config/firebase.config");
 const prdImage = require("../models/prdImage");
 const censorServices = require("../services/censorService")
 
@@ -111,7 +111,31 @@ class ProductServices {
             throw new Error(error)
         }
     }
+    async deleteImageProduct(imageId, res) {
+        try {
+            // Xóa ảnh khỏi Firebase
+            const deleteImageInFirebase = await deleteFile(imageId, 'product');
+            console.log(deleteImageInFirebase);
 
+            // Tìm và xóa ảnh trong cơ sở dữ liệu
+            const imageToDelete = await prdImage.findOne({ where: { id: imageId } });
+            if (imageToDelete) {
+                await imageToDelete.destroy();
+                return res.status(200).json({
+                    message: "Delete successfully",
+                });
+            } else {
+                return res.status(404).json({
+                    message: "Image not found",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: "Internal server error",
+            });
+        }
+    }
     async updateAuctionProduct(productId, userId, body, fileImages, res) {
         try {
             const product = await Product.findOne({
