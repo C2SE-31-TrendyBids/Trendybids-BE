@@ -8,7 +8,6 @@ router.get("/me", verifyToken, userController.getCurrentUser);
 router.post('/join-auction-session', userController.joinAuctionSession)
 router.get('/get-all-auction-price/:sessionId', userController.getAllAuctionPriceInSession)
 router.get('/get-summary-auction-price/:sessionId', userController.getTheNecessaryDataInSession)
-router.post('/place-bid', userController.placeABid)
 
 
 module.exports = router;

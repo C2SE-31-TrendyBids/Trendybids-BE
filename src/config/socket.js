@@ -1,7 +1,8 @@
-const { Server } = require('socket.io');
+const {Server} = require('socket.io');
 const jwt = require('jsonwebtoken');
 const eventEmitter = require('../config/eventEmitter');
 const conversationService = require('../services/conversationService');
+const userServices = require('../services/userServices')
 
 const connectedClients = new Map();
 const initSocket = (server) => {
@@ -34,23 +35,31 @@ const initSocket = (server) => {
 
     io.on('connection', (socket) => {
         console.log("New Incoming Connection:", socket.user.id);
-        socket.emit('Connected', {status: 'good'})
+        socket.emit('connected', {status: 'good'})
         // Save client connected to map
         connectedClients.set(socket.user.id, socket);
 
 
         // ----- Handle event in Auction Session -----
-        socket.on('onSessionJoin', (body) => {
-            socket.join(body);
-            console.log(`Socket ${socket.id} joined room '${body}'`);
-
-            // Get the Set of socket IDs in the room
-            const clientsInRoom = io.sockets.adapter.rooms.get(body);
-
-            // Log the socket IDs
-            console.log(`Clients in room '${body}':`, Array.from(clientsInRoom));
+        socket.on('onSessionJoin', (payload) => {
+            socket.join(payload.sessionId);
+            const room = io.sockets.adapter.rooms.get(payload.sessionId);
+            if (room) {
+                const numberOfUsers = room.size; // or room.size
+                io.to(payload.sessionId).emit('onUserParticipation', {numberOfUsers});
+                console.log("Number of users in the room: " + numberOfUsers);
+            } else {
+                console.log("Room does not exist or there are no users in this room.");
+            }
+            console.log("onSessionJoin: ", socket.rooms)
         });
 
+
+        socket.on('bidPrice.create', async (payload) => {
+            const responsePlaceABid =  await userServices.placeABid(socket.user.id, payload.bidPrice, payload.sessionId);
+            // Emit event to all sockets in the room with ID payload.sessionId
+            io.to(payload.sessionId).emit('onBidPrice', responsePlaceABid);
+        });
 
         // ----- Handle event in Conversation -----
         socket.on('onConversationJoin', (payload) => {
@@ -91,7 +100,7 @@ const initSocket = (server) => {
 
         // Send message to participant in conversation (only send to other participants, not sender
         participants.forEach((participantId) => {
-            if(participantId !== senderId) {
+            if (participantId !== senderId) {
                 // Check client connected in socket
                 const client = connectedClients.get(participantId);
                 client && client.emit('onMessage', parsePayload);

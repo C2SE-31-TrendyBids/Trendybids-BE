@@ -3,6 +3,7 @@ const UserParticipant = require('../models/userParticipant')
 const AuctionHistory = require('../models/auctionHistory')
 const {Sequelize} = require("sequelize");
 const User = require("../models/user");
+const {validateBidPrice} = require("../helpers/joiSchema");
 
 class UserServices {
     getCurrentUser(user, res) {
@@ -42,7 +43,18 @@ class UserServices {
         }
     }
 
-    async getAllAuctionPrice({page, limit} , sessionId, res) {
+    async getHighestPrice(sessionId) {
+        const latestHighestPrice = await AuctionHistory.findOne({
+            where: {
+                productAuctionId: sessionId
+            },
+            order: [['createdAt', 'DESC']],
+            attributes: ['auctionPrice']
+        });
+        return latestHighestPrice?.auctionPrice
+    }
+
+    async getAllAuctionPrice({page, limit}, sessionId, res) {
         try {
             const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
@@ -60,20 +72,34 @@ class UserServices {
             const {count, rows} = await AuctionHistory.findAndCountAll({
                 where: {productAuctionId: sessionId},
                 ...queries,
-                attributes: {exclude: ["productAuctionId"]},
+                attributes: {exclude: ["userId", "updatedAt"]},
                 include: [
                     {
                         model: User,
                         as: 'user',
-                        attributes: ['id', 'fullName', 'avatarUrl']
+                        attributes: ['id',
+                            [Sequelize.literal('CASE WHEN LENGTH("user"."full_name") > 12 THEN LEFT("user"."full_name", 8) || \'****\' ELSE LEFT("user"."full_name", LENGTH("user"."full_name") - 4) || REPEAT(\'*\', 4) END'), 'fullName'],
+                            'avatarUrl']
                     }
                 ]
             })
+            const totalPages = Math.ceil(count / limitNumber)
+            const highestPrice = await this.getHighestPrice(sessionId);
+            // get number of participation
+            const numberOfParticipation = await UserParticipant.count({
+                where: {
+                    productAuctionId: sessionId // Assuming sessionId holds the value you want to count for
+                }
+            });
 
             return res.status(200).json({
                 message: 'Get all auction price successfully!',
                 totalBids: count,
-                auctionPrices: rows
+                currentPage: pageNumber,
+                highestPrice: highestPrice,
+                totalPages,
+                auctionPrices: rows,
+                numberOfParticipation: numberOfParticipation
             });
         } catch (error) {
             console.error("Error in getAllAuctionPrice:", error);
@@ -82,16 +108,7 @@ class UserServices {
     }
 
 
-    async getHighestPrice(sessionId) {
-        const latestHighestPrice = await AuctionHistory.findOne({
-            where: {
-                productAuctionId: sessionId
-            },
-            order: [['createdAt', 'DESC']],
-            attributes: ['auctionPrice']
-        });
-        return latestHighestPrice?.auctionPrice
-    }
+
 
     async getTheNecessaryDataInSession(sessionId, res) {
         try {
@@ -112,50 +129,110 @@ class UserServices {
         }
     }
 
-    async placeABid(userId, {bidPrice , sessionId}, res) {
-        try {
-            // handle check user in party
-            const participant = await UserParticipant.findOne({
-                where: {userId, productAuctionId: sessionId}
-            })
-            if (!participant) {
-                return res.status(400).json({
-                    message: "User is not in this auction!",
-                });
+    async checkUserInAuction(userId, sessionId) {
+        const participant = await UserParticipant.findOne({
+            where: {userId, productAuctionId: sessionId}
+        });
+        if (!participant) {
+            return {
+                status: "error",
+                message: "User is not in this auction!"
             }
-            // handle check bid price
-            const highestPrice = await this.getHighestPrice(sessionId);
-            if (bidPrice <= highestPrice) {
-                return res.status(400).json({
-                    message: "Bid price must be greater than the current highest price!",
-                });
-            }
+        }
+        return {status: "success", message: "None"}
+    }
 
-            const updateHighestPrice = ProductAuction.update({
-                highestPrice: bidPrice
-            }, {
-                where: {
-                    id: sessionId
+    async checkBidPrice(bidPrice, sessionId) {
+        const highestPrice = await this.getHighestPrice(sessionId);
+        if (bidPrice <= highestPrice) {
+            return {
+                status: "error",
+                message: "Bid price must be greater than the current highest price!"
+            }
+        }
+        const {error} = validateBidPrice({bidPrice: bidPrice});
+        if (error)
+            return {
+                status: "error",
+                message: "Bid price must number!"
+            }
+        return {status: "success", message: "None"}
+    }
+
+    async updateAuctionData(bidPrice, sessionId, userId) {
+        const updateHighestPrice = ProductAuction.update({
+            highestPrice: bidPrice
+        }, {
+            where: {
+                id: sessionId
+            }
+        });
+
+        const createAuctionHistory = AuctionHistory.create({
+            auctionPrice: bidPrice,
+            productAuctionId: sessionId,
+            userId: userId
+        });
+
+        await Promise.all([updateHighestPrice, createAuctionHistory]);
+    }
+
+    async getUpdatedData(userId, sessionId) {
+        const updatedParticipant = await UserParticipant.findOne({
+            where: {userId, productAuctionId: sessionId},
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'fullName', 'avatarUrl']
                 }
-            });
+            ]
+        });
+        const updatedAuctionHistory = await AuctionHistory.findOne({
+            where: {userId: userId}
+        });
 
-            const createAuctionHistory = AuctionHistory.create({
-                auctionPrice: bidPrice,
-                productAuctionId: sessionId,
-                userId: userId
-            });
+        return {updatedParticipant, updatedAuctionHistory};
+    }
 
-            await Promise.all([updateHighestPrice, createAuctionHistory]);
 
-            return res.status(201).json({
+    async placeABid(userId, bidPrice, sessionId) {
+        try {
+            // check user already in auction
+            const isValidParticipant = await this.checkUserInAuction(userId, sessionId);
+            if (isValidParticipant?.status === "error") {
+                return {status: "error", userId: userId, message: isValidParticipant.message}
+            }
+            // check bid price validity
+            const isValidBidPrice = await this.checkBidPrice(bidPrice, sessionId);
+            if (isValidBidPrice?.status === "error") {
+                return {status: "error", userId: userId, message: isValidBidPrice.message}
+            }
+            // update auction data
+            await this.updateAuctionData(bidPrice, sessionId, userId);
+
+            const {updatedParticipant, updatedAuctionHistory} = await this.getUpdatedData(userId, sessionId);
+
+            console.log(updatedParticipant)
+
+            return ({
+                status: "success",
                 message: 'Place a bid successfully!',
-                bidPrice: bidPrice
+                bidPrice: {
+                    id: updatedAuctionHistory.id,
+                    auctionPrice: bidPrice,
+                    productAuctionId: sessionId,
+                    createdAt: updatedAuctionHistory.createdAt,
+                    user: updatedParticipant.user.get({ plain: true }),
+                },
+                highestPrice: bidPrice
             });
         } catch (error) {
-            console.error("Error in getAllAuctionPrice:", error);
-            throw new Error(error)
+            console.error("Error in placeABid:", error);
+            return ({message: error.message, status: "error"});
         }
     }
+
 }
 
 module.exports = new UserServices
