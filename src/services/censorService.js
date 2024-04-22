@@ -1,5 +1,5 @@
-const { uploadFile, uploadMultipleFile } = require("../config/firebase.config");
-const { Op } = require("sequelize");
+const {uploadFile, uploadMultipleFile} = require("../config/firebase.config");
+const {Op} = require("sequelize");
 const Censor = require("../models/censor");
 const ProductAuction = require("../models/productAuction");
 const Product = require('../models/product')
@@ -22,7 +22,7 @@ class CensorService {
     }, avatar, res) {
         try {
             const userId = user.id;
-            const userMember = await MemberOrganization.findOne({ where: { userId: userId } })
+            const userMember = await MemberOrganization.findOne({where: {userId: userId}})
             if (userMember) {
                 return res.status(200).json({
                     message: "Your account is already a member of the organization",
@@ -36,7 +36,7 @@ class CensorService {
                 avatarUrl = uploadAvatar.url
             }
             const [censor, created] = await Censor.findOrCreate({
-                where: { phoneNumber },
+                where: {phoneNumber},
                 defaults: {
                     name,
                     phoneNumber,
@@ -61,9 +61,9 @@ class CensorService {
     }
 
 
-    async getCensors({ page, limit, order, name, ...query }, res) {
+    async getCensors({page, limit, order, name, ...query}, res) {
         try {
-            const queries = { raw: false, nest: true };
+            const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -77,14 +77,14 @@ class CensorService {
             if (order) queries.order = [order];
             // order of product
             const censorQuery = {
-                ...(name ? { name: { [Op.iLike]: `${name}%` } } : {}),
+                ...(name ? {name: {[Op.iLike]: `${name}%`}} : {}),
                 ...query
             };
 
-            const { count, rows } = await Censor.findAndCountAll({
+            const {count, rows} = await Censor.findAndCountAll({
                 where: censorQuery,
                 ...queries,
-                attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
+                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
                 distinct: true,
             })
 
@@ -103,19 +103,19 @@ class CensorService {
 
 
     async getAuctions({
-        page,
-        limit,
-        order,
-        productName,
-        orderProduct,
-        time,
-        categoryId,
-        priceFrom,
-        priceTo,
-        ...query
-    }, res) {
+                          page,
+                          limit,
+                          order,
+                          productName,
+                          orderProduct,
+                          time,
+                          categoryId,
+                          priceFrom,
+                          priceTo,
+                          ...query
+                      }, res) {
         try {
-            const queries = { raw: false, nest: true };
+            const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -129,27 +129,41 @@ class CensorService {
             // handle config query
             if (order) queries.order = [order];
             // Order product by startingPrice if specified
-            const queriesProduct = { raw: false, nest: true }
+            const queriesProduct = {raw: false, nest: true}
             if (orderProduct === 'price_ASC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'ASC']];
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'ASC']];
             } else if (orderProduct === 'price_DESC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'DESC']];
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'DESC']];
             }
             // Add a sort condition by product name if specified
             if (orderProduct === 'productName_ASC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'ASC']];
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'ASC']];
             } else if (orderProduct === 'productName_DESC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'DESC']];
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'DESC']];
             }
             // Commented out categoryId query as it's already handled in productQuery
             if (categoryId) {
                 query['$product.category.id$'] = categoryId;
             }
+
             const productQuery = {
-                ...(productName !== undefined ? { productName: { [Op.substring]: productName } } : {}),
-                ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
-                ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
+                ...(productName !== undefined ? {productName: {[Op.substring]: productName}} : {}),
+                ...(priceFrom !== undefined || priceTo !== undefined ?
+                        {
+                            startingPrice: {
+                                ...(priceFrom !== undefined && priceTo !== undefined ?
+                                        {[Op.between]: [priceFrom, priceTo]} :
+                                        priceFrom !== undefined ?
+                                            {[Op.gte]: priceFrom} :
+                                            {[Op.lte]: priceTo}
+                                )
+                            }
+                        } :
+                        {}
+                )
             };
+
+            console.log(productQuery)
 
             if (time === "nearest") {
                 queries.order = [["startTime", "ASC"]];
@@ -157,10 +171,10 @@ class CensorService {
                 queries.order = [["startTime", "DESC"]];
             }
 
-            const { count, rows } = await ProductAuction.findAndCountAll({
+            const {count, rows} = await ProductAuction.findAndCountAll({
                 where: query,
                 ...queries,
-                attributes: { exclude: ['productId', 'censorId'] },
+                attributes: {exclude: ['productId', 'censorId']},
                 subQuery: false,
                 include: [
                     {
@@ -168,17 +182,17 @@ class CensorService {
                         as: 'product',
                         required: true,
                         where: productQuery,
-                        attributes: { exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"] },
+                        attributes: {exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"]},
                         include: [
                             {
                                 model: User,
                                 as: 'owner',
                                 required: true,
-                                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                                attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken']}
                             }, {
                                 model: PrdImage,
                                 as: 'prdImages',
-                                attributes: { exclude: ['productId'] }
+                                attributes: {exclude: ['productId']}
                             },
                             {
                                 model: Category,
@@ -191,7 +205,7 @@ class CensorService {
                         model: Censor,
                         as: 'censor',
                         required: true,
-                        attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
+                        attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
 
                     }
                 ],
@@ -226,11 +240,10 @@ class CensorService {
         ...query
     }, res) {
         try {
-            const queries = { raw: false, nest: true };
+            const queries = {raw: true, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
-
             // If pageNumber is less than 1, set it to 1
             pageNumber = pageNumber < 1 ? 1 : pageNumber;
             // Calculate the offset
@@ -240,17 +253,17 @@ class CensorService {
             // handle config query
             if (order) queries.order = [order];
             // Order product by startingPrice if specified
-            const queriesProduct = { raw: false, nest: true }
+            const queriesProduct = {raw: false, nest: true}
             if (orderProduct === 'price_ASC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'ASC']];
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'ASC']];
             } else if (orderProduct === 'price_DESC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'startingPrice', 'DESC']];
+                queries.order = [[{model: Product, as: 'product'}, 'startingPrice', 'DESC']];
             }
             // Add a sort condition by product name if specified
             if (orderProduct === 'productName_ASC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'ASC']];
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'ASC']];
             } else if (orderProduct === 'productName_DESC') {
-                queries.order = [[{ model: Product, as: 'product' }, 'productName', 'DESC']];
+                queries.order = [[{model: Product, as: 'product'}, 'productName', 'DESC']];
             }
             // Commented out categoryId query as it's already handled in productQuery
             if (categoryId) {
@@ -264,10 +277,17 @@ class CensorService {
             }
 
             const productQuery = {
-                ...(productName !== undefined ? { productName: { [Op.substring]: productName } } : {}),
-                ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
-                ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
+                ...(productName !== undefined ? {productName: {[Op.substring]: productName}} : {}),
+                ...(priceFrom !== undefined && priceTo !== undefined ?
+                        {startingPrice: {[Op.between]: [priceFrom, priceTo]}} :
+                        priceFrom !== undefined ?
+                            {startingPrice: {[Op.gte]: priceFrom}} :
+                            priceTo !== undefined ?
+                                {startingPrice: {[Op.lte]: priceTo}} :
+                                {}
+                )
             };
+
 
             if (time === "nearest") {
                 queries.order = [["startTime", "ASC"]];
@@ -275,10 +295,10 @@ class CensorService {
                 queries.order = [["startTime", "DESC"]];
             }
 
-            const { count, rows } = await ProductAuction.findAndCountAll({
+            const {count, rows} = await ProductAuction.findAndCountAll({
                 where: query,
                 ...queries,
-                attributes: { exclude: ['productId', 'censorId'] },
+                attributes: {exclude: ['productId', 'censorId']},
                 subQuery: false,
                 include: [
                     {
@@ -286,17 +306,17 @@ class CensorService {
                         as: 'product',
                         required: true,
                         where: productQuery,
-                        attributes: { exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"] },
+                        attributes: {exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"]},
                         include: [
                             {
                                 model: User,
                                 as: 'owner',
                                 required: true,
-                                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                                attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken']}
                             }, {
                                 model: PrdImage,
                                 as: 'prdImages',
-                                attributes: { exclude: ['productId'] }
+                                attributes: {exclude: ['productId']}
                             },
                             {
                                 model: Category,
@@ -322,9 +342,9 @@ class CensorService {
         }
     }
 
-    async getCurrentCensor(userId, { page, limit, order, ...query }, res) {
+    async getCurrentCensor(userId, {page, limit, order, ...query}, res) {
         try {
-            const queries = { raw: false, nest: true };
+            const queries = {raw: false, nest: true};
             // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
             let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
             const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -344,7 +364,7 @@ class CensorService {
             const response = await Censor.findAll({
                 where: queryCensor,
                 ...queries,
-                attributes: { exclude: ['roleId', 'createdAt', 'updatedAt', "userId", "walletId"] },
+                attributes: {exclude: ['roleId', 'createdAt', 'updatedAt', "userId", "walletId"]},
                 include: [
                     {
                         model: Wallet,
@@ -368,22 +388,22 @@ class CensorService {
         try {
 
             const product = await Product.findOne({
-                where: { id: productId }
+                where: {id: productId}
             })
             if (!product) {
                 return res.status(404).json({
                     message: "Product is not found"
                 })
             } else if (product.status === "Verified") {
-                return res.status(400).json({ message: "Product is Verified" });
+                return res.status(400).json({message: "Product is Verified"});
             }
 
             // Check whether the user belongs to the specified organization
             const memberCensor = await MemberOrganization.findOne({
-                where: { userId }
+                where: {userId}
             })
             if (!memberCensor || (product.censorId !== memberCensor.censorId)) {
-                return res.status(400).json({ message: "The user does not belong to the specified organization" });
+                return res.status(400).json({message: "The user does not belong to the specified organization"});
             }
 
             // Update status of Product
@@ -402,22 +422,22 @@ class CensorService {
         try {
 
             const product = await Product.findOne({
-                where: { id: productId }
+                where: {id: productId}
             })
             if (!product) {
                 return res.status(404).json({
                     message: "Product is not found"
                 })
             } else if (product.status === "Rejected") {
-                return res.status(400).json({ message: "Product is rejected" });
+                return res.status(400).json({message: "Product is rejected"});
             }
 
             // Check whether the user belongs to the specified organization
             const memberCensor = await MemberOrganization.findOne({
-                where: { userId }
+                where: {userId}
             })
             if (!memberCensor || (product.censorId !== memberCensor.censorId)) {
-                return res.status(400).json({ message: "The user does not belong to the specified organization" });
+                return res.status(400).json({message: "The user does not belong to the specified organization"});
             }
 
             // Update status of Product
@@ -462,7 +482,7 @@ class CensorService {
                 productId: body.productId,
                 censorId: censor.censorId,
             })
-            await Product.update({ status: 'Success' }, { where: { id: body.productId } });
+            await Product.update({status: 'Success'}, {where: {id: body.productId}});
             return res.status(200).json({
                 message: "Post auction successfully",
                 data: auctionSession
@@ -477,7 +497,7 @@ class CensorService {
             const auctionSession = await ProductAuction.update({
                 ...body
             }, {
-                where: { id: sessionId }
+                where: {id: sessionId}
             })
 
             const status = auctionSession[0] === 1 ? 200 : 404;
@@ -492,7 +512,7 @@ class CensorService {
     async deleteAuctionSession(sessionId, res) {
         try {
             const auctionSession = await ProductAuction.destroy({
-                where: { id: sessionId }
+                where: {id: sessionId}
             })
             const status = auctionSession > 0 ? 200 : 404;
             return res.status(status).json({
