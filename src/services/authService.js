@@ -197,16 +197,40 @@ class AuthService {
         }
     }
 
-    async logout(userId, res) {
+    async refreshToken(refreshToken, res) {
         try {
-            return res.status(200).json({
-                message: "Logout successful",
-            });
+            let response, status;
+            const user = await User.findOne({
+                where: {refreshToken}
+            })
+            if (!user) {
+                return res.status(404).json({
+                    message: 'User is not found'
+                });
+            }
+
+            jwt.verify(refreshToken, process.env.JWT_RT_SECRET, (error) => {
+                if(error) {
+                    return res.status(401).json({
+                        message: "Refresh token has expired. Require login again",
+                    });
+                } else {
+                    const jwtAt = jwt.sign(
+                        { id: user.id, email: user.email },
+                        process.env.JWT_AT_SECRET,
+                        { expiresIn: "2d" }
+                    )
+                    status = jwtAt ? '200' : '400'
+                    response = {
+                        message: jwtAt ? 'Generate access token successfully' : "Fail to generate new access token. Let's try more time",
+                        accessToken: jwtAt ? jwtAt : null
+                    }
+                }
+            })
+
+            return res.status(status).json(response);
         } catch (error) {
-            console.error("Logout error:", error);
-            return res.status(500).json({
-                message: "Internal Server Error",
-            });
+            throw new Error(error)
         }
     }
 
