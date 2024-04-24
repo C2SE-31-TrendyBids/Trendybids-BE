@@ -40,7 +40,7 @@ class ConversationService {
                     {
                         model: Message,
                         as: 'messages',
-                        attributes: ['id', 'content', 'filesAttach', 'createdAt'],
+                        attributes: ['id', 'content', 'filesAttach', 'isSeen', 'createdAt'],
                         where: {
                             createdAt: {
                                 [Op.eq]: sequelize.literal(`(SELECT MAX("created_at") FROM "message" WHERE "conversation_id" = "conversation"."id")`)
@@ -153,6 +153,46 @@ class ConversationService {
             })
             // Extract user IDs from the participants
             return participants.map(participant => participant.user.id);
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
+    async getUnseenConversationsCount(userId, res) {
+        try {
+            const participants = await ConverParticipant.findAll({
+                where: {
+                    userId
+                }
+            })
+            const existConversation = participants.map((item) => item.conversationId)
+
+            const conversations = await Conversation.findAll({
+                where: {
+                    id: existConversation
+                },
+                include: {
+                    model: Message,
+                    as: 'messages',
+                    where: {
+                        isSeen: false
+                    },
+                    required: false
+                }
+            });
+
+            let count = 0;
+            for (let conversation of conversations) {
+                if (conversation.messages.length > 0 && conversation.messages[0].userId !== userId && !conversation.messages[0].isSeen) {
+                    count++;
+                }
+            }
+
+            return res.json({
+                message: "success",
+                unseenConv: count,
+                conversations
+            })
         } catch (error) {
             throw new Error(error);
         }
