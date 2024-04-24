@@ -78,7 +78,7 @@ const uploadFile = async (file, type, userId) => {
 const uploadMultipleFile = async (files, type) => {
     const folder = getFolderByType(type);
     const uploadTasks = files.map(async (file) => {
-        const storageRef = ref(storage, `${folder}/${uuidv4()}`);
+        const storageRef = convertStorageRef(file, folder, type);
         const metadata = {contentType: file.mimetype};
         const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata);
         const [id, url] = await Promise.all([
