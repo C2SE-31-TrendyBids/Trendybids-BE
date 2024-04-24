@@ -14,6 +14,7 @@ const PrdImage = require("./prdImage");
 const Category = require("./category");
 const UserParticipant = require("./userParticipant");
 const Feedback = require("./feedback");
+const AuctionHistory = require("./auctionHistory")
 
 // Define associations
 User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
@@ -34,7 +35,7 @@ ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as
 ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
 
 UserParticipant.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' })
-UserParticipant.belongsTo(ProductAuction, { foreignKey: 'productAuctionId', targetKey: 'id', as: 'product' })
+UserParticipant.belongsTo(ProductAuction, { foreignKey: 'productAuctionId', targetKey: 'id', as: 'productAuction' })
 
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId", onDelete: 'CASCADE' });
 Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' })
@@ -53,4 +54,4 @@ MemberOrganization.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', 
 Payment.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' })
 Feedback.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' })
 
-
+AuctionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'userAuctionHistory', onDelete: 'CASCADE' })
