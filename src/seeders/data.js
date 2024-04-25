@@ -82,7 +82,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
         founding: faker.date.past().toISOString().slice(0, 10),
         address: faker.location.streetAddress(),
         userId: initUsers[Math.floor(Math.random() * initUsers.length)].id,
-        roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
+        // roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
     };
     initCensors.push(newCensor);
 }

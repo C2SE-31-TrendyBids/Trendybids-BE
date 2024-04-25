@@ -54,6 +54,14 @@ class MessageService {
                 }
             })
 
+            for (let message of messages) {
+                if (message.user.id !== userId && !message.isSeen) {
+                    message.isSeen = true;
+                    message.seenAt = new Date();
+                    await message.save();
+                }
+            }
+
             return res.status(200).json({
                 message: "Success",
                 data: messages

@@ -19,6 +19,16 @@ const Message = sequelize.define("message", {
         field: 'created_at',
         defaultValue: DataTypes.NOW,
     },
+    isSeen: {
+        type: DataTypes.BOOLEAN,
+        field: 'is_seen',
+        defaultValue: false,
+    },
+    seenAt: {
+        type: DataTypes.DATE,
+        field: 'seen_at',
+        allowNull: true
+    },
     conversationId: {
         type: DataTypes.UUID,
         field: 'conversation_id',

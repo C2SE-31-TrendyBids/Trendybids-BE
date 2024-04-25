@@ -52,5 +52,57 @@ class StatisticalController {
             });
         }
     }
+    async getSessionAuction(req, res) {
+        try {
+            const { productAuctionId } = req.query;
+            if (!productAuctionId) {
+                return res.status(400).json({
+                    message: '"Account" is not Censor',
+                });
+            }
+            return StatisticalService.getSessionAuctionDetail(productAuctionId, res);
+        } catch (error) {
+            console.log(err);
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message
+            });
+        }
+    }
+    async getSessionForUser(req, res) {
+        try {
+            const userId = req.user.dataValues.id
+            if (!userId) {
+                return res.status(400).json({
+                    message: '"Account" is not find',
+                });
+            }
+            return StatisticalService.getSessionAuctionForUser(userId, res);
+        } catch (error) {
+            console.log(err);
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message
+            });
+        }
+    }
+    async getSessionAuctionForUser(req, res) {
+        try {
+            const { productAuctionId } = req.query;
+            const userId = req.user.dataValues.id
+            if (!productAuctionId) {
+                return res.status(400).json({
+                    message: '"Account" is not Censor',
+                });
+            }
+            return StatisticalService.getSessionAuctionDetailForUser(productAuctionId, userId, res);
+        } catch (error) {
+            console.log(err);
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message
+            });
+        }
+    }
 }
 module.exports = new StatisticalController();

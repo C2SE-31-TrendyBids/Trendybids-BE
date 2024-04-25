@@ -9,5 +9,6 @@ const upload = multer({storage: multer.memoryStorage()})
 router.use(verifyToken)
 router.post("/create", upload.array('filesAttach'), ConversationController.createConversation);
 router.get("/conversations", ConversationController.getConversations);
+router.get("/unseen-count", ConversationController.getUnseenConversationsCount);
 
 module.exports = router;
