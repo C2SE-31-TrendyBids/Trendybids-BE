@@ -41,12 +41,15 @@ const initSocket = (server) => {
 
 
         // ----- Handle event in Auction Session -----
-        socket.on('onSessionJoin', (payload) => {
+        socket.on('onSessionJoin', async (payload) => {
             socket.join(payload.sessionId);
-            const room = io.sockets.adapter.rooms.get(payload.sessionId);
+            const userId = socket.user.id;
+            const room = await io.sockets.adapter.rooms.get(payload.sessionId);
+            const responseUserInAuction= await userServices.checkUserInAuction(userId, payload.sessionId);
             if (room) {
                 const numberOfUsers = room.size; // or room.size
-                io.to(payload.sessionId).emit('onUserParticipation', {numberOfUsers});
+                const isParticipation = responseUserInAuction?.status === "success" ? true : false;
+                io.to(payload.sessionId).emit('onUserParticipation', {numberOfUsers, isParticipation,userId});
                 console.log("Number of users in the room: " + numberOfUsers);
             } else {
                 console.log("Room does not exist or there are no users in this room.");
@@ -54,6 +57,18 @@ const initSocket = (server) => {
             console.log("onSessionJoin: ", socket.rooms)
         });
 
+        socket.on('onSessionLeave', async (payload) => {
+            socket.leave(payload.sessionId);
+            const room = await io.sockets.adapter.rooms.get(payload.sessionId);
+            if (room) {
+                const numberOfUsers = room.size; // or room.size
+                io.to(payload.sessionId).emit('onUserParticipation', {numberOfUsers});
+                console.log("Number of users in the room: " + numberOfUsers);
+            } else {
+                console.log("Room does not exist or there are no users in this room.");
+            }
+            console.log("onConversationLeave", socket.rooms)
+        })
 
         socket.on('bidPrice.create', async (payload) => {
             const responsePlaceABid =  await userServices.placeABid(socket.user.id, payload.bidPrice, payload.sessionId);
