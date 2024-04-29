@@ -1,5 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('sequelize');
+const bcrypt = require("bcryptjs");
 const initRoles = [
     {
         id: 'R01',
@@ -58,12 +59,16 @@ const initPrdImages = [];
 const initProductAuctions = [];
 const quantity = 15;
 
+const hashPassword = bcrypt.hashSync(
+    '123456789',
+    bcrypt.genSaltSync(8)
+);
 for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     const newUser = {
         id: faker.string.uuid(),
         fullName: faker.person.fullName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: hashPassword,
         phoneNumber: faker.number.int(10, 11),
         avatarUrl: faker.image.avatar(),
         address: faker.location.streetAddress(),

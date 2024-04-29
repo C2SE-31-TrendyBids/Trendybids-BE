@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const eventEmitter = require('../config/eventEmitter');
 const conversationService = require('../services/conversationService');
 const userServices = require('../services/userServices')
+const notificationServices = require('../services/notificationService')
 
 const connectedClients = new Map();
 const initSocket = (server) => {
@@ -93,6 +94,36 @@ const initSocket = (server) => {
         socket.on('onConversationLeave', (payload) => {
             socket.leave(payload.conversationId);
             console.log("onConversationLeave", socket.rooms)
+        })
+
+        socket.on('product.verify', async (payload) => {
+            console.log(payload)
+            const recipientId = payload.recipientId;
+            console.log(recipientId)
+            const res = await notificationServices.createNotification({
+                type: 'private',
+                title: `Censor - ${payload.censor.name}: Verify product`,
+                content: payload.content,
+                linkAttach: "/profile/management-post",
+                recipientId
+            })
+            const client = connectedClients.get(recipientId);
+            client && client.emit('onProductVerify', res.data);
+        })
+
+        socket.on('product.reject', async (payload) => {
+            console.log(payload)
+            const recipientId = payload.recipientId;
+            console.log(recipientId)
+            const res = await notificationServices.createNotification({
+                type: 'private',
+                title: `Censor - ${payload.censor.name}: Reject product`,
+                content: payload.content,
+                linkAttach: "/profile/management-post",
+                recipientId
+            })
+            const client = connectedClients.get(recipientId);
+            client && client.emit('onProductReject', res.data);
         })
 
         socket.on('disconnect', () => {

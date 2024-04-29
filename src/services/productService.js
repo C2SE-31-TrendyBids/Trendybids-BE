@@ -162,7 +162,8 @@ class ProductServices {
             }
 
             await product.update({
-                ...body
+                ...body,
+                note: null
             })
 
             return res.status(200).json({

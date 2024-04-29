@@ -33,6 +33,10 @@ const Product = sequelize.define("product", {
         type: DataTypes.ENUM('Processing', 'Verified', 'Rejected', 'Success'),
         defaultValue: 'Processing',
     },
+    note: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
 }, {
     tableName: 'product',
     timestamps: true
