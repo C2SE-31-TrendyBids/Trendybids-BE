@@ -7,6 +7,7 @@ const category = require('./category')
 const conversation = require('./conversation')
 const message = require('./message')
 const statistical = require('./statistical')
+const notification = require('./notification')
 
 const initRoutes = (app) => {
   // Example
@@ -19,6 +20,7 @@ const initRoutes = (app) => {
   app.use("/api/conversation", conversation);
   app.use("/api/message", message);
   app.use("/api/statistical", statistical);
+  app.use("/api/notification", notification);
 
   app.use((req, res) => {
     res.status(200).json({

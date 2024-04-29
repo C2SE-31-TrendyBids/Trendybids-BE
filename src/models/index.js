@@ -15,5 +15,6 @@ require('./memberOrganization')
 require('./conversation')
 require('./converParticipant')
 require('./message')
+require('./notification')
 require('./association')
 
