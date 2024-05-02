@@ -112,6 +112,20 @@ const validateCreateConversation = (body) => {
         content: joi.string().required(),
     }).validate(body)
 }
+const validatePayment = (index, amount) => {
+    const data = { index, amount };
+    return joi.object({
+        index: joi.alternatives().try(
+            joi.number().integer().min(1).max(6),
+            joi.string().regex(/^\d+$/).min(1).max(6)
+        ).required(),
+        amount: joi.alternatives().try(
+            joi.number().precision(2).required(),
+            joi.string().regex(/^\d+(\.\d{1,2})?$/).required()
+        ).required()
+    }).validate(data)
+
+};
 
 module.exports = {
     validateRegister,
@@ -125,5 +139,6 @@ module.exports = {
     validateAuctionSession,
     validateBidPrice,
     validateEditUser,
-    validateCreateConversation
+    validateCreateConversation,
+    validatePayment
 }

@@ -16,4 +16,5 @@ require('./conversation')
 require('./converParticipant')
 require('./message')
 require('./association')
+require('./transactionHistory')
 

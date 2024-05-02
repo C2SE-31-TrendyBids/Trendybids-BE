@@ -7,7 +7,7 @@ const category = require('./category')
 const conversation = require('./conversation')
 const message = require('./message')
 const statistical = require('./statistical')
-
+const payment = require('./payment')
 const initRoutes = (app) => {
   // Example
   app.use("/api/auth", auth);
@@ -19,6 +19,8 @@ const initRoutes = (app) => {
   app.use("/api/conversation", conversation);
   app.use("/api/message", message);
   app.use("/api/statistical", statistical);
+  app.use("/api/payment", payment);
+
 
   app.use((req, res) => {
     res.status(200).json({

@@ -27,10 +27,12 @@
     "nodemailer": "^6.9.11",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "paypal-rest-sdk": "^1.8.1",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "process": "^0.11.10",
     "pug": "2.0.0-beta11",
+    "qrcode": "^1.5.3",
     "sequelize": "^6.37.1",
     "socket.io": "^4.7.5",
     "uuid": "^9.0.1"

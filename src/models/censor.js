@@ -23,11 +23,6 @@ const Censor = sequelize.define("censor", {
         type: DataTypes.ENUM('Processing', 'Verified', 'Rejected'),
         defaultValue: 'Processing',
     },
-    walletId: {
-        type: DataTypes.UUID,
-        field: 'wallet_id',
-        allowNull: true
-    },
     companyTaxCode: DataTypes.STRING,
     taxCodeIssuanceDate: DataTypes.DATE,
     position: DataTypes.STRING,
