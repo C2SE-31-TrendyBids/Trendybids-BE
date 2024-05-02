@@ -101,10 +101,12 @@ class ProductServices {
                     productId: product.id
                 };
             });
-            const image = await prdImage.bulkCreate(prdImageModels)
+            await prdImage.bulkCreate(prdImageModels)
 
             return res.status(200).json({
                 message: "Post product successfully",
+                product: product,
+                thumbnail: imageURLs[0]
             });
 
         } catch (error) {
@@ -201,6 +203,7 @@ class ProductServices {
                 message: "Delete successfully",
             });
         } catch (error) {
+            console.log(error)
             throw new Error(error)
         }
     }

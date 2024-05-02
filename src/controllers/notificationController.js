@@ -27,6 +27,16 @@ class NotificationController {
             });
         }
     }
+
+    getCountUnseen(req, res)  {
+        try {
+            return notificationServices.getCountUnseen(req?.user?.id, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
 }
 
 module.exports = new NotificationController()

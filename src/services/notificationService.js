@@ -10,6 +10,7 @@ class NotificationService {
                 content: body.content,
                 recipientId: body.recipientId,
                 linkAttach: body.linkAttach,
+                thumbnail: body.thumbnail,
             })
             return {
                 message: "success",
@@ -61,6 +62,24 @@ class NotificationService {
 
             return res.json({
                 message: "Update status successfully",
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async getCountUnseen(userId, res) {
+        try {
+            const countUnseen = await Notification.count({
+                where: {
+                    recipientId: userId,
+                    isSeen: false,
+                }
+            })
+
+            return res.json({
+                message: "Count unseen successfully",
+                count: countUnseen
             })
         } catch (error) {
             console.log(error)

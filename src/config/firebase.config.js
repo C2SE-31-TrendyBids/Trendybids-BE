@@ -116,9 +116,6 @@ const deleteMultipleFile = async (imageIds, type) => {
     // Create a reference to the file to delete
     const uploadTasks = imageIds.map(async (imageId) => {
         // Query Firestore to get the full file name
-        const q = query(collection(storage, folder), where("id", "==", imageId));
-        const querySnapshot = await getDocs(q);
-
         const desertRef = ref(storage, `${folder}/${imageId}`);
         return deleteObject(desertRef)
     });

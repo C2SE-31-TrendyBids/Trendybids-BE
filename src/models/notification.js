@@ -19,6 +19,10 @@ const Notification = sequelize.define("notification", {
         field: 'link_attach',
         allowNull: true
     },
+    thumbnail: {
+        type: DataTypes.STRING(255),
+        allowNull: true
+    },
     recipientId: {
         type: DataTypes.UUID,
         field: 'recipient_id',
