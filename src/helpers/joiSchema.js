@@ -55,6 +55,7 @@ const validateAuctionProduct = (body) => {
         startingPrice: joi.number().required(),
         categoryId: joi.string().required(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 

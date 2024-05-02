@@ -6,6 +6,7 @@ const router = express.Router()
 
 router.use(verifyToken)
 router.get('/notifications', notificationController.getNotifications)
+router.get('/count-unseen', notificationController.getCountUnseen)
 router.post('/seen-notification', notificationController.seenNotification)
 
 module.exports = router

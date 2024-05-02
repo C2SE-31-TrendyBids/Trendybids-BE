@@ -495,6 +495,16 @@ class CensorService {
         }
     }
 
+    getAllMembersId(censorId) {
+        try {
+            return MemberOrganization.findAll({
+                where: { censorId },
+                attributes: ['userId']
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = new CensorService()

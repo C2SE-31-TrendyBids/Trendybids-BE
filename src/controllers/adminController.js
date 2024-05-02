@@ -27,7 +27,7 @@ class AdminController {
 
     getUsers(req, res) {
         try {
-            return adminServices.getUsers(req.query, res)
+            return adminServices.getUsers(req?.user?.id, req.query, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
