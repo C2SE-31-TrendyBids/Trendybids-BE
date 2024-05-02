@@ -65,6 +65,7 @@ const validateUpdateProduct = (body) => {
         startingPrice: joi.number(),
         categoryId: joi.string(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 

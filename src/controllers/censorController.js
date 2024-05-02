@@ -81,7 +81,7 @@ class CensorController {
                     message: '\"productId\" is required',
                 });
             }
-            return censorServices.rejecteAuctionProduct(req.user.id, productId, res)
+            return censorServices.rejecteAuctionProduct(req.user.id, req.body, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

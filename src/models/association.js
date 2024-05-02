@@ -16,6 +16,7 @@ const UserParticipant = require("./userParticipant");
 const Feedback = require("./feedback");
 const AuctionHistory = require("./auctionHistory")
 const TransactionHistory = require("./transactionHistory")
+const Notification = require("./notification")
 
 // Define associations
 
@@ -62,3 +63,4 @@ AuctionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'use
 TransactionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'userTransaction', onDelete: 'CASCADE' })
 TransactionHistory.belongsTo(User, { foreignKey: 'receiverId', targetKey: 'id', as: 'receiverTransaction', onDelete: 'CASCADE' })
 
+Notification.belongsTo(User, { foreignKey: 'recipientId', targetKey: 'id', as: 'recipient', onDelete: 'CASCADE' })

@@ -212,6 +212,12 @@ class UserServices {
                 message: "Bid price must be greater than the current highest price!"
             }
         }
+        if (bidPrice > highestPrice * 2) {
+            return {
+                status: "error",
+                message: "Bid price must be less than twice the highest price!"
+            }
+        }
         const {error} = validateBidPrice({bidPrice: bidPrice});
         if (error)
             return {
@@ -274,7 +280,8 @@ class UserServices {
 
             const {updatedParticipant, updatedAuctionHistory} = await this.getUpdatedData(userId, sessionId);
 
-            console.log(updatedParticipant)
+            console.log(updatedAuctionHistory.createdAt)
+            const currentDate = new Date()
 
             return ({
                 status: "success",
@@ -283,7 +290,7 @@ class UserServices {
                     id: updatedAuctionHistory.id,
                     auctionPrice: bidPrice,
                     productAuctionId: sessionId,
-                    createdAt: updatedAuctionHistory.createdAt,
+                    createdAt: currentDate,
                     user: updatedParticipant.user.get({ plain: true }),
                 },
                 highestPrice: bidPrice
