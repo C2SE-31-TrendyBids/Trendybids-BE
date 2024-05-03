@@ -15,6 +15,7 @@ const Category = require("./category");
 const UserParticipant = require("./userParticipant");
 const Feedback = require("./feedback");
 const AuctionHistory = require("./auctionHistory")
+const TransactionHistory = require("./transactionHistory")
 
 // Define associations
 User.belongsTo(Wallet, { foreignKey: 'walletId', targetKey: 'id', as: 'wallet' })
@@ -55,3 +56,6 @@ Payment.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onD
 Feedback.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' })
 
 AuctionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'userAuctionHistory', onDelete: 'CASCADE' })
+
+TransactionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'userTransaction', onDelete: 'CASCADE' })
+TransactionHistory.belongsTo(User, { foreignKey: 'receiverId', targetKey: 'id', as: 'receiverTransaction', onDelete: 'CASCADE' })

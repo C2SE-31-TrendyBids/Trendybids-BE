@@ -13,5 +13,10 @@ router.get('/get-users', adminController.getUsers)
 router.put('/edit-user', upload.single('avatar'), adminController.editUser)
 router.delete('/delete-user', adminController.deleteUser)
 router.get('/get-roles', adminController.getAllRolesController)
+router.get('/get-summary', adminController.getSummary)
+router.get('/get-summary-product-auction', adminController.getLineChartProductAuction)
+router.get('/get-profit', adminController.getProfit)
+router.get('/get-transaction-history', adminController.getTransactionHistory)
+
 
 module.exports = router

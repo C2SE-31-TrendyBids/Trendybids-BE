@@ -113,6 +113,24 @@ const validateCreateConversation = (body) => {
     }).validate(body)
 }
 
+const validateDate = (data) => {
+    const currentYear = new Date().getFullYear(); // Get the current year
+    const schema = joi.object({
+        year: joi.number().max(currentYear).required(), // Year must be less than the current year
+        period: joi.string().valid('week', 'month', 'year').insensitive().required(),
+        month: joi.number().min(1).max(12).when('period', {
+            is: 'month',
+            then: joi.required()
+        }),
+        week: joi.number().min(1).max(4).when('period', {
+            is: 'week',
+            then: joi.required()
+        })
+    });
+
+    return schema.validate(data);
+};
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -125,5 +143,6 @@ module.exports = {
     validateAuctionSession,
     validateBidPrice,
     validateEditUser,
-    validateCreateConversation
+    validateCreateConversation,
+    validateDate
 }
