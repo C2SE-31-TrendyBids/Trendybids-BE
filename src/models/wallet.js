@@ -1,5 +1,5 @@
 const sequelize = require("../config/database");
-const {DataTypes} = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 const Wallet = sequelize.define("wallet", {
     id: {
@@ -8,10 +8,14 @@ const Wallet = sequelize.define("wallet", {
         allowNull: false,
         primaryKey: true,
     },
-    money: DataTypes.DECIMAL(10,2),
+    money: DataTypes.DECIMAL(10, 2),
+    userId: {
+        type: DataTypes.UUID,
+        allowNull: true
+    }
 }, {
     tableName: 'wallet',
-    timestamps: false
+    timestamps: false,
 });
 
 module.exports = Wallet;

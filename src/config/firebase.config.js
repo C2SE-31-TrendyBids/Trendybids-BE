@@ -1,4 +1,4 @@
-const {initializeApp} = require("firebase/app");
+const { initializeApp } = require("firebase/app");
 const {
     getStorage,
     collection,
@@ -11,7 +11,7 @@ const {
     deleteObject,
     getMetadata
 } = require("firebase/storage");
-const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 require("dotenv").config();
 
@@ -79,7 +79,7 @@ const uploadMultipleFile = async (files, type) => {
     const folder = getFolderByType(type);
     const uploadTasks = files.map(async (file) => {
         const storageRef = convertStorageRef(file, folder, type);
-        const metadata = {contentType: file.mimetype};
+        const metadata = { contentType: file.mimetype };
         const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata);
         const [id, url] = await Promise.all([
             (await getMetadata(snapshot.ref)).name,
@@ -116,9 +116,6 @@ const deleteMultipleFile = async (imageIds, type) => {
     // Create a reference to the file to delete
     const uploadTasks = imageIds.map(async (imageId) => {
         // Query Firestore to get the full file name
-        const q = query(collection(storage, folder), where("id", "==", imageId));
-        const querySnapshot = await getDocs(q);
-
         const desertRef = ref(storage, `${folder}/${imageId}`);
         return deleteObject(desertRef)
     });

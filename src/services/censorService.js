@@ -389,7 +389,7 @@ class CensorService {
         }
     }
 
-    async rejecteAuctionProduct(userId, productId, res) {
+    async rejecteAuctionProduct(userId, {productId, note}, res) {
         try {
 
             const product = await Product.findOne({
@@ -413,6 +413,7 @@ class CensorService {
 
             // Update status of Product
             product.status = "Rejected"
+            product.note = note
             await product.save()
 
             return res.status(200).json({
@@ -494,6 +495,16 @@ class CensorService {
         }
     }
 
+    getAllMembersId(censorId) {
+        try {
+            return MemberOrganization.findAll({
+                where: { censorId },
+                attributes: ['userId']
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = new CensorService()

@@ -55,6 +55,7 @@ const validateAuctionProduct = (body) => {
         startingPrice: joi.number().required(),
         categoryId: joi.string().required(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 
@@ -65,6 +66,7 @@ const validateUpdateProduct = (body) => {
         startingPrice: joi.number(),
         categoryId: joi.string(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 
@@ -112,6 +114,20 @@ const validateCreateConversation = (body) => {
         content: joi.string().required(),
     }).validate(body)
 }
+const validatePayment = (index, amount) => {
+    const data = { index, amount };
+    return joi.object({
+        index: joi.alternatives().try(
+            joi.number().integer().min(1).max(6),
+            joi.string().regex(/^\d+$/).min(1).max(6)
+        ).required(),
+        amount: joi.alternatives().try(
+            joi.number().precision(2).required(),
+            joi.string().regex(/^\d+(\.\d{1,2})?$/).required()
+        ).required()
+    }).validate(data)
+
+};
 
 const validateDate = (data) => {
     const currentYear = new Date().getFullYear(); // Get the current year
@@ -144,5 +160,6 @@ module.exports = {
     validateBidPrice,
     validateEditUser,
     validateCreateConversation,
-    validateDate
+    validateDate,
+    validatePayment
 }

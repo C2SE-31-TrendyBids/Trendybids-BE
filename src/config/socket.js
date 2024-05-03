@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const eventEmitter = require('../config/eventEmitter');
 const conversationService = require('../services/conversationService');
 const userServices = require('../services/userServices')
+const notificationServices = require('../services/notificationService')
+const censorServices = require('../services/censorService')
 
 const connectedClients = new Map();
 const initSocket = (server) => {
@@ -93,6 +95,40 @@ const initSocket = (server) => {
         socket.on('onConversationLeave', (payload) => {
             socket.leave(payload.conversationId);
             console.log("onConversationLeave", socket.rooms)
+        })
+
+        socket.on('product.updateStatus', async (payload) => {
+            const recipientId = payload.recipientId;
+            const res = await notificationServices.createNotification({
+                type: 'private',
+                ...payload
+            })
+            const client = connectedClients.get(recipientId);
+            client && client.emit('onNotification', res.data);
+        })
+
+        socket.on('product.createOrUpdate', async (payload) => {
+            const censorId = payload?.censorId
+            const notificationBody = {
+                type: 'private',
+                title: payload?.title,
+                content: payload?.content,
+                linkAttach: payload?.linkAttach,
+                thumbnail: payload?.thumbnail
+            }
+
+            // Get all memberID in the censor
+            const censorMember = await censorServices.getAllMembersId(censorId);
+            const memberIds = censorMember.map(member => member.dataValues.userId);
+
+            for (const recipientId of memberIds) {
+                const res = await notificationServices.createNotification({
+                    ...notificationBody,
+                    recipientId
+                });
+                const client = connectedClients.get(recipientId);
+                client && client.emit('onNotification', res.data);
+            }
         })
 
         socket.on('disconnect', () => {

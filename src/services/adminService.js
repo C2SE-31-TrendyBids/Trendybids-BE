@@ -71,7 +71,8 @@ class AdminService {
         }
     }
 
-    async getUsers({page, limit, order, fullName, roleId, status, email}, res) {
+
+    async getUsers(userId, { page, limit, order, fullName, roleId, status, email }, res) {
         try {
             const queries = {raw: true, nes: true}
 
@@ -83,9 +84,10 @@ class AdminService {
             if (order) queries.order = [order]
 
             const userQuery = {
-                ...(fullName ? {fullName: {[Op.iLike]: `${fullName}%`}} : {}),
-                ...(email ? {email: {[Op.iLike]: `${email}%`}} : {}),
-                ...(status ? {status} : {}),
+                ...(fullName ? { fullName: { [Op.iLike]: `${fullName}%` } } : {}),
+                ...(email ? { email: { [Op.iLike]: `${email}%` } } : {}),
+                ...(status ? { status } : {}),
+                id: { [Op.not]: userId }
             }
 
             const {count, rows} = await User.findAndCountAll({
