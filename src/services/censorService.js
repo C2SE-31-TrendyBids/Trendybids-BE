@@ -81,7 +81,7 @@ class CensorService {
             const {count, rows} = await Censor.findAndCountAll({
                 where: censorQuery,
                 ...queries,
-                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt']},
                 distinct: true,
             })
 
