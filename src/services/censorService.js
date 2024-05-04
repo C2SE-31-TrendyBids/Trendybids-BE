@@ -110,7 +110,7 @@ class CensorService {
                                       query,
                                       censorId
     ) {
-        const queries = {raw: true, nest: true};
+        const queries = {raw: false, nest: true};
         // Calculate the offset
         queries.offset = (parseInt(page) - 1) * parseInt(limit);
         queries.limit = parseInt(limit);
