@@ -131,6 +131,16 @@ const initSocket = (server) => {
             }
         })
 
+        socket.on('censor.updateStatus', async (payload) => {
+            const recipientId = payload.recipientId;
+            const res = await notificationServices.createNotification({
+                type: 'private',
+                ...payload
+            })
+            const client = connectedClients.get(recipientId);
+            client && client.emit('onNotification', res.data);
+        })
+
         socket.on('disconnect', () => {
             console.log(`Disconnected: ${socket.id}`);
             connectedClients.delete(socket.user.id);
