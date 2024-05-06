@@ -81,7 +81,7 @@ class CensorService {
             const {count, rows} = await Censor.findAndCountAll({
                 where: censorQuery,
                 ...queries,
-                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+                attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt']},
                 distinct: true,
             })
 
@@ -110,7 +110,7 @@ class CensorService {
                                       query,
                                       censorId
     ) {
-        const queries = {raw: true, nest: true};
+        const queries = {raw: false, nest: true};
         // Calculate the offset
         queries.offset = (parseInt(page) - 1) * parseInt(limit);
         queries.limit = parseInt(limit);
@@ -495,6 +495,16 @@ class CensorService {
         }
     }
 
+    getAllMembersId(censorId) {
+        try {
+            return MemberOrganization.findAll({
+                where: { censorId },
+                attributes: ['userId']
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = new CensorService()

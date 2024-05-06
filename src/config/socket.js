@@ -4,6 +4,7 @@ const eventEmitter = require('../config/eventEmitter');
 const conversationService = require('../services/conversationService');
 const userServices = require('../services/userServices')
 const notificationServices = require('../services/notificationService')
+const censorServices = require('../services/censorService')
 
 const connectedClients = new Map();
 const initSocket = (server) => {
@@ -96,34 +97,48 @@ const initSocket = (server) => {
             console.log("onConversationLeave", socket.rooms)
         })
 
-        socket.on('product.verify', async (payload) => {
-            console.log(payload)
+        socket.on('product.updateStatus', async (payload) => {
             const recipientId = payload.recipientId;
-            console.log(recipientId)
             const res = await notificationServices.createNotification({
                 type: 'private',
-                title: `Censor - ${payload.censor.name}: Verify product`,
-                content: payload.content,
-                linkAttach: "/profile/management-post",
-                recipientId
+                ...payload
             })
             const client = connectedClients.get(recipientId);
-            client && client.emit('onProductVerify', res.data);
+            client && client.emit('onNotification', res.data);
         })
 
-        socket.on('product.reject', async (payload) => {
-            console.log(payload)
+        socket.on('product.createOrUpdate', async (payload) => {
+            const censorId = payload?.censorId
+            const notificationBody = {
+                type: 'private',
+                title: payload?.title,
+                content: payload?.content,
+                linkAttach: payload?.linkAttach,
+                thumbnail: payload?.thumbnail
+            }
+
+            // Get all memberID in the censor
+            const censorMember = await censorServices.getAllMembersId(censorId);
+            const memberIds = censorMember.map(member => member.dataValues.userId);
+
+            for (const recipientId of memberIds) {
+                const res = await notificationServices.createNotification({
+                    ...notificationBody,
+                    recipientId
+                });
+                const client = connectedClients.get(recipientId);
+                client && client.emit('onNotification', res.data);
+            }
+        })
+
+        socket.on('censor.updateStatus', async (payload) => {
             const recipientId = payload.recipientId;
-            console.log(recipientId)
             const res = await notificationServices.createNotification({
                 type: 'private',
-                title: `Censor - ${payload.censor.name}: Reject product`,
-                content: payload.content,
-                linkAttach: "/profile/management-post",
-                recipientId
+                ...payload
             })
             const client = connectedClients.get(recipientId);
-            client && client.emit('onProductReject', res.data);
+            client && client.emit('onNotification', res.data);
         })
 
         socket.on('disconnect', () => {

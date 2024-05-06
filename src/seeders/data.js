@@ -127,6 +127,28 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     initProductAuctions.push(newProductAuction);
 }
 
+// Generate random transaction data
+const initTransactions = [];
+for (let i = 0; i < quantity; i++) {
+    const transactionType = Math.random() > 0.5 ? 'Posting_fee' : 'Auction_fee';
+    const amount = parseFloat((Math.random() * 100).toFixed(2));
+    const userId = initUsers[Math.floor(Math.random() * initUsers.length)].id;
+
+    let receiverId;
+
+    // Assign random receiver (different from sender)
+    do {
+        receiverId = initUsers[Math.floor(Math.random() * initUsers.length)].id;
+    } while (receiverId === userId); // Ensure receiver is not the sender
+
+    initTransactions.push({
+        money: amount,
+        transactionType,
+        userId,
+        receiverId,
+    });
+}
+
 
 module.exports = {
     initRoles,
@@ -135,5 +157,6 @@ module.exports = {
     initCensors,
     initProducts,
     initPrdImages,
-    initProductAuctions
+    initProductAuctions,
+    initTransactions
 }
