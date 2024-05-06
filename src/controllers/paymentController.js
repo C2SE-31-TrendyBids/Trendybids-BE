@@ -4,14 +4,14 @@ class PaymentController {
     async createPaymentForUser(req, res) {
         try {
             const senderId = req.user.dataValues.id
-            const { amount, index, receiverId } = req.body
+            const { amount, index, receiverId, auctionId } = req.body
             const { error } = validatePayment(index, amount);
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            const payment = await PaymentService.createPayment(senderId, amount, index, receiverId);
+            const payment = await PaymentService.createPayment(senderId, amount, index, receiverId, auctionId);
             res.json(payment);
         } catch (error) {
             res.status(500).json({ error: 'Error creating payment' });
@@ -41,20 +41,28 @@ class PaymentController {
             const userId = req.user.dataValues.id
             return await PaymentService.getWallet(userId, res);
         } catch (error) {
-            res.status(500).json({ error: 'Error creating payment' });
+            res.status(500).json({ error: error });
+        }
+    }
+    async getWalletById(req, res) {
+        try {
+            const id = req.query.id
+            return await PaymentService.getWalletById(id, res);
+        } catch (error) {
+            res.status(500).json({ error: error });
         }
     }
     async createPaymentTranferFromWallet(req, res) {
         try {
             const senderId = req.user.dataValues.id
-            const { amount, index, receiverId } = req.body
+            const { amount, index, receiverId, auctionId } = req.body
             const { error } = validatePayment(index, amount);
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            return await PaymentService.transferMoney(senderId, receiverId, amount, index, res);
+            return await PaymentService.transferMoney(senderId, receiverId, amount, index, auctionId, res);
         } catch (error) {
             res.status(500).json({ error: 'Error creating payment' });
         }
@@ -62,17 +70,38 @@ class PaymentController {
     async paymentQrSuccessfully(req, res) {
         try {
             const senderId = req.user.dataValues.id
-            const { amount, index, receiverId } = req.body
-
+            const { amount, index, receiverId, auctionId } = req.body
             const { error } = validatePayment(index, amount);
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
             }
-            return await PaymentService.paymentQrSuccess(senderId, amount, index, receiverId, res);
+            return await PaymentService.paymentQrSuccess(senderId, amount, index, receiverId, auctionId, res);
         } catch (error) {
             res.status(500).json({ error: 'Error creating payment' });
+        }
+    }
+    async otpTranferMoney(req, res) {
+        try {
+            const userId = req.user.dataValues.id
+            return await PaymentService.otpTranferMoney(userId, res);
+
+        } catch (error) {
+            res.status(500).json({ error: 'Error creating otp' });
+
+        }
+    }
+    async verifyOtpPayment(req, res) {
+        try {
+            const userId = req.user.dataValues.id
+            const otp = req.body.otp
+            console.log(otp);
+            return await PaymentService.verifyOtpPayment(userId, otp, res);
+
+        } catch (error) {
+            res.status(500).json({ error: 'Error creating otp' });
+
         }
     }
 }

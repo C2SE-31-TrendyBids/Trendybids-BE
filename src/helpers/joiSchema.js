@@ -43,7 +43,6 @@ const validateForgotPassword = (body) => {
 const validateResetPassword = (body) => {
     return joi.object({
         email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
-        otp: joi.string().min(6).max(6).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
 }
