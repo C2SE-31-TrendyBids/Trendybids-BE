@@ -10,9 +10,10 @@ router.post('/tranfer-wallet', paymentController.createPaymentTranferFromWallet)
 router.post('/paypal/success', paymentController.processPaymentAgreement);
 router.get('/create-qrcode', paymentController.createPaymentQrCode);
 router.get('/get-wallet', paymentController.getWalletOfUser);
+router.get('/get-wallet-by-id', paymentController.getWalletById);
 router.post('/qr-success', paymentController.paymentQrSuccessfully);
-
-
+router.post('/otp-tranfer', paymentController.otpTranferMoney);
+router.post('/verify-otp', paymentController.verifyOtpPayment);
 
 
 module.exports = router

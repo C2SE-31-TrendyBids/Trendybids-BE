@@ -26,6 +26,7 @@ class AuthService {
             });
             // Generate OTP and send email verify
             const otp = crypto.randomInt(100000, 999999).toString();
+            console.log(otp);
             cache.set(`${user.id}-verify_otp`, otp, 300);
             await sendEmail({
                 email,
@@ -144,6 +145,7 @@ class AuthService {
 
             // Generate OTP and send email reset password
             const otp = crypto.randomInt(100000, 999999).toString();
+            console.log(otp);
             cache.set(`${user.id}-reset-pass_otp`, otp, 300);
             await sendEmail({
                 email,
@@ -161,8 +163,27 @@ class AuthService {
             throw new Error(error);
         }
     }
+    async verifyOTPResetPass({ email, otp }, res) {
+        const user = await User.findOne({
+            where: { email },
+        });
+        if (!user) {
+            return res.status(401).json({
+                message:
+                    "The email sent does not match the registered email",
+            });
+        }
+        const otpCache = cache.get(`${user.id}-reset-pass_otp`);
+        if (!otpCache || otpCache !== otp) {
+            return res.status(400).json({
+                message: otpCache ? "Invalid OTP" : "OTP has expired",
+            });
+        }
+        cache.del(`${user.id}-reset-pass_otp`);
+        return res.status(200).json({ message: "OTP Successfully" })
 
-    async resetPassword({ email, password, otp }, res) {
+    }
+    async resetPassword({ email, password }, res) {
         try {
             const hashPassword = bcrypt.hashSync(
                 password,
@@ -177,18 +198,8 @@ class AuthService {
                         "The email sent does not match the registered email",
                 });
             }
-
-            const otpCache = cache.get(`${user.id}-reset-pass_otp`);
-            if (!otpCache || otpCache !== otp) {
-                return res.status(400).json({
-                    message: otpCache ? "Invalid OTP" : "OTP has expired",
-                });
-            }
-
             user.password = hashPassword;
             await user.save();
-            cache.del(`${user.id}-reset-pass_otp`);
-
             return res.status(200).json({
                 message: "Reset password successfully",
             });
@@ -201,7 +212,7 @@ class AuthService {
         try {
             let response, status;
             const user = await User.findOne({
-                where: {refreshToken}
+                where: { refreshToken }
             })
             if (!user) {
                 return res.status(404).json({
@@ -210,7 +221,7 @@ class AuthService {
             }
 
             jwt.verify(refreshToken, process.env.JWT_RT_SECRET, (error) => {
-                if(error) {
+                if (error) {
                     return res.status(401).json({
                         message: "Refresh token has expired. Require login again",
                     });

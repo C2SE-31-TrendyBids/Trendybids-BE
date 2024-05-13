@@ -40,7 +40,7 @@ ProductAuction.belongsTo(Product, { foreignKey: 'productId', targetKey: 'id', as
 ProductAuction.belongsTo(Censor, { foreignKey: 'censorId', targetKey: 'id', as: 'censor' });
 
 UserParticipant.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' })
-UserParticipant.belongsTo(ProductAuction, { foreignKey: 'productAuctionId', targetKey: 'id', as: 'productAuction' })
+UserParticipant.belongsTo(ProductAuction, { foreignKey: 'productAuctionId', targetKey: 'id', as: 'productAuction', onDelete: 'CASCADE' })
 
 Conversation.belongsToMany(User, { through: ConverParticipant, foreignKey: "conversationId", onDelete: 'CASCADE' });
 Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' })
@@ -63,6 +63,8 @@ AuctionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'use
 
 TransactionHistory.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'userTransaction', onDelete: 'CASCADE' })
 TransactionHistory.belongsTo(User, { foreignKey: 'receiverId', targetKey: 'id', as: 'receiverTransaction', onDelete: 'CASCADE' })
+TransactionHistory.belongsTo(ProductAuction, { foreignKey: 'auctionId', targetKey: 'id', as: 'auctionTransaction', onDelete: 'CASCADE' })
+
 
 
 Notification.belongsTo(User, { foreignKey: 'recipientId', targetKey: 'id', as: 'recipient', onDelete: 'CASCADE' })

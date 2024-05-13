@@ -2,10 +2,18 @@ const paypal = require('../config/paypal');
 const Wallet = require('../models/wallet');
 const TransactionHistory = require('../models/transactionHistory')
 const Censor = require('../models/censor')
+const User = require('../models/user')
 const qrcode = require('qrcode');
+const sendEmail = require("../util/sendMail");
+const readFileTemplate = require("../helpers/readFileTemplate");
+const crypto = require("crypto");
+const NodeCache = require("node-cache");
+const ProductAuction = require('../models/productAuction');
+const Product = require('../models/product');
+const cache = new NodeCache();
 
 class PaymentService {
-    async createPayment(senderId, amount, index, receiverId) {
+    async createPayment(senderId, amount, index, receiverId, auctionId) {
         const paymentData = {
             "intent": "sale",
             "payer": {
@@ -21,7 +29,7 @@ class PaymentService {
                     "total": amount
                 },
                 "description": "Payment for service",
-                "custom": JSON.stringify({ senderId, index, receiverId })
+                "custom": JSON.stringify({ senderId, index, receiverId, auctionId })
             }]
         };
         try {
@@ -42,14 +50,15 @@ class PaymentService {
         }
     }
 
-    async createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId) {
+    async createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId, auctionId) {
         try {
             await TransactionHistory.create({
                 money: parseFloat(amount),
                 transactionType: transactionType,
                 paymentMethods: paymentMethods,
                 userId: senderId,
-                receiverId: receiverId
+                receiverId: receiverId,
+                auctionId: auctionId
             });
             console.log("Transaction history created successfully.");
         } catch (error) {
@@ -59,6 +68,7 @@ class PaymentService {
     }
 
     async processPayment(userId, amount) {
+        console.log(userId);
         try {
             let wallet = await Wallet.findOne({ where: { userId: userId } });
             if (!wallet) {
@@ -79,7 +89,7 @@ class PaymentService {
             2: 'Posting_fee',
             3: 'Auction_fee',
             4: 'Product_fee',
-            5: 'Admin_payment',
+            5: 'Tranfer_money',
             6: 'Mortgage_assets'
         };
 
@@ -101,36 +111,120 @@ class PaymentService {
             let amount = payment.transactions[0].amount.total;
             let custom = JSON.parse(payment.transactions[0].custom);
             let senderId = custom.senderId;
+            let auctionId = custom.auctionId
             let index = custom.index;
             let paymentMethods = 'PayPal'
             let transactionType = await this.getTransactionType(index)
-
             let receiverId
-            if (parseInt(index) === 5 || parseInt(index) === 6) {
-                receiverId = process.env.ADMIN_ID
-            }
-            else if (parseInt(index) === 1) {
-                receiverId = null
-            } else {
+            console.log(auctionId);
+            if (parseInt(index) === 4) {
                 let receiverData = custom.receiverId || null
                 if (receiverData) {
                     let receiver = await Censor.findOne({ where: { id: receiverData } });
-                    if (!receiver) receiverId = receiverData
-                    else receiverId = receiver.userId
+                    if (!receiver) {
+                        receiverId = receiverId;
+                    } else {
+                        receiverId = receiver.userId;
+                    }
                 }
-            }
-            await this.processPayment(receiverId, amount);
-            await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId);
+                let productAuction = await ProductAuction.findOne({
+                    where: { id: auctionId },
+                    include: [
+                        {
+                            model: Product,
+                            as: 'product',
+                            required: true,
+                            attributes: { exclude: ['censorId', 'updatedAt', "categoryId"] },
+                        }
+                    ]
+                });
+                console.log(productAuction);
+                let sellerId = productAuction.product.ownerProductId
+                await this.paymentForProduct(amount, senderId, receiverId, sellerId, auctionId, transactionType, paymentMethods);
+                return res.status(200).json({ message: "Paypal Payment Successfully" });
+            } else {
 
-            res.status(200).json({ message: "Paypal Payment Successfully" });
+                if (parseInt(index) === 6) {
+                    receiverId = process.env.ADMIN_ID
+                }
+                else if (parseInt(index) === 1) {
+                    receiverId = senderId
+                } else {
+                    let receiverData = custom.receiverId || null
+                    if (receiverData) {
+                        let receiver = await Censor.findOne({ where: { id: receiverData } });
+                        if (!receiver) receiverId = receiverData
+                        else receiverId = receiver.userId
+                    }
+                }
+                await this.processPayment(receiverId, amount);
+                await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId, auctionId);
+                res.status(200).json({ message: "Paypal Payment Successfully" });
+            }
         } catch (error) {
             console.error("Error in paypalPaymentSuccess:", error);
             throw error;
         }
     }
-    async transferMoney(senderId, receiverId, amount, index, res) {
+    async otpTranferMoney(userId, res) {
         try {
-            let paymentMethods = 'E_Wallet'
+            console.log(userId);
+            const user = await User.findOne({
+                where: { id: userId },
+            });
+            if (!user) {
+                return res.status(200).json({
+                    message: "User not found",
+                });
+            }
+            let email = user.email
+            console.log(email);
+            // Generate OTP and send email reset password
+            const otp = crypto.randomInt(100000, 999999).toString();
+            console.log(otp);
+            cache.set(`${userId}-tranfer-money_otp`, otp, 300);
+            await sendEmail({
+                email,
+                subject: "OTP confirms payment - TrendyBids",
+                html: readFileTemplate("tranferMoney.hbs", {
+                    otp: otp,
+                    fullName: user.fullName,
+                }),
+            });
+
+            return res.status(200).json({
+                message: "Send to your email successfully",
+            });
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+    async verifyOtpPayment(userId, otp, res) {
+        const otpCache = cache.get(`${userId}-tranfer-money_otp`);
+        if (!otpCache || otpCache !== otp) {
+            return res.status(400).json({
+                message: otpCache ? "Invalid OTP" : "OTP has expired",
+            });
+        }
+        cache.del(`${userId}-verify_otp`);
+        return res.status(200).json({ message: "OTP Successfully" })
+    }
+    async paymentForProduct(amount, senderId, receiverId, sellerId, auctionId, transactionType, paymentMethods) {
+        let payments = [
+            { userId: receiverId, amount: parseFloat(amount * 0.07) }, // 7% for receiver (censor)
+            { userId: sellerId, amount: parseFloat(amount * 0.9) }, // 90% for seller
+            { userId: process.env.ADMIN_ID, amount: parseFloat(amount * 0.03) } // 3% for admin
+        ];
+        payments.forEach(async (payment) => {
+            await this.processPayment(payment.userId, payment.amount);
+            await this.createTransactionHistory(payment.amount, transactionType, paymentMethods, senderId, payment.userId, auctionId);
+        });
+    }
+    async transferMoney(senderId, receiverId, amount, index, auctionId, res) {
+        try {
+            let paymentMethods = 'E_Wallet';
+            let transactionType = await this.getTransactionType(index);
+
             if (parseInt(index) === 1) {
                 return res.status(400).json({ message: "No support" });
             }
@@ -141,20 +235,39 @@ class PaymentService {
             if (parseFloat(senderWallet.money) < parseFloat(amount)) {
                 throw new Error("Insufficient funds in sender's wallet.");
             }
-            //Deduct money from user's wallet
             senderWallet.money = (parseFloat(senderWallet.money) - parseFloat(amount)).toFixed(2);
             await senderWallet.save();
-            //Add money to the recipient's wallet
-            if (parseInt(index) === 5 || parseInt(index) === 6) receiverId = process.env.ADMIN_ID
-            else {
+
+            if (parseInt(index) === 6) {
+                receiverId = process.env.ADMIN_ID;
+                this.processPayment(receiverId, amount);
+                await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId, auctionId);
+            } else {
                 let receiver = await Censor.findOne({ where: { id: receiverId } });
-                if (!receiver) receiverId = receiverId
-                else receiverId = receiver.userId
+                if (!receiver) {
+                    receiverId = receiverId;
+                } else {
+                    receiverId = receiver.userId;
+                }
+                if (parseInt(index) === 4) {
+                    let productAuction = await ProductAuction.findOne({
+                        where: { id: auctionId },
+                        include: [
+                            {
+                                model: Product,
+                                as: 'product',
+                                required: true,
+                                attributes: { exclude: ['censorId', 'updatedAt', "categoryId"] },
+                            }
+                        ]
+                    });
+                    let sellerId = productAuction.product.ownerProductId
+                    await this.paymentForProduct(amount, senderId, receiverId, sellerId, auctionId, transactionType, paymentMethods);
+                } else {
+                    this.processPayment(receiverId, amount);
+                    await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId, auctionId);
+                }
             }
-            this.processPayment(receiverId, amount)
-            //Record transaction history in the table
-            let transactionType = await this.getTransactionType(index)
-            await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId);
             res.status(200).json({ message: "Make a successful transaction" });
         } catch (error) {
             console.error("Error transferring money:", error);
@@ -174,23 +287,48 @@ class PaymentService {
             res.status(500).send('Error generating QR code');
         }
     }
-    async paymentQrSuccess(senderId, amount, index, receiverId, res) {
+    async paymentQrSuccess(senderId, amount, index, receiverId, auctionId, res) {
         try {
-            if (parseInt(index) === 5 || parseInt(index) === 6) {
-                receiverId = process.env.ADMIN_ID
-            }
-            else if (parseInt(index) === 1) {
-                receiverId = null
-            } else {
-                let receiver = await Censor.findOne({ where: { id: receiverId } });
-                if (!receiver) receiverId = receiverId
-                else receiverId = receiver.userId
-            }
             let transactionType = await this.getTransactionType(index)
             let paymentMethods = 'Bank'
-            await this.processPayment(receiverId, amount);
-            await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId);
-            res.status(200).json({ message: "Bank Payment Successfully" });
+            if (parseInt(index) === 4) {
+                let receiver = await Censor.findOne({ where: { id: receiverId } });
+                if (!receiver) {
+                    receiverId = receiverId;
+                } else {
+                    receiverId = receiver.userId;
+                }
+                let productAuction = await ProductAuction.findOne({
+                    where: { id: auctionId },
+                    include: [
+                        {
+                            model: Product,
+                            as: 'product',
+                            required: true,
+                            attributes: { exclude: ['censorId', 'updatedAt', "categoryId"] },
+                        }
+                    ]
+                });
+                let sellerId = productAuction.product.ownerProductId
+                await this.paymentForProduct(amount, senderId, receiverId, sellerId, auctionId, transactionType, paymentMethods);
+                return res.status(200).json({ message: "Bank Payment Successfully" });
+            } else {
+
+                if (parseInt(index) === 6) {
+                    receiverId = process.env.ADMIN_ID
+                }
+                else if (parseInt(index) === 1) {
+                    receiverId = senderId
+                } else {
+                    let receiver = await Censor.findOne({ where: { id: receiverId } });
+                    if (!receiver) receiverId = receiverId
+                    else receiverId = receiver.userId
+                }
+
+                await this.processPayment(receiverId, amount);
+                await this.createTransactionHistory(amount, transactionType, paymentMethods, senderId, receiverId, auctionId);
+                res.status(200).json({ message: "Bank Payment Successfully" });
+            }
         } catch (error) {
             console.error("Error transferring money:", error);
             throw error;
@@ -201,9 +339,19 @@ class PaymentService {
             let wallet = await Wallet.findOne({
                 where: { userId: userId },
                 attributes: { exclude: ['userId'] },
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                    }
+                ]
             });
             if (!wallet) {
-                wallet = new Wallet({ userId: userId });
+                wallet = new Wallet({ userId: userId, money: 0 });
+                await wallet.save();
+                return this.getWallet(userId, res);
             }
             return res.status(200).json({ wallet });
         } catch (error) {
@@ -211,7 +359,29 @@ class PaymentService {
             return res.status(500).json({ error: "Internal server error" });
         }
     }
-
-
+    async getWalletById(id, res) {
+        try {
+            let wallet = await Wallet.findOne({
+                where: { id: id },
+                attributes: { exclude: ['userId', 'money'] },
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken', 'email', 'phoneNumber', 'avatarUrl', 'address', 'status'] }
+                    }
+                ]
+            });
+            if (!wallet) {
+                return res.status(400).json({
+                    message: "Not found Wallet",
+                });
+            }
+            return res.status(200).json({ wallet });
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
 }
 module.exports = new PaymentService();
