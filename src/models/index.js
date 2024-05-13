@@ -19,4 +19,5 @@ require('./message')
 require('./notification')
 require('./association')
 require('./transactionHistory')
+require('./rule')
 

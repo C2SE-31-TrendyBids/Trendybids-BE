@@ -1,5 +1,5 @@
 const adminServices = require('../services/adminService')
-const {validateDate, validateEditUser} = require("../helpers/joiSchema");
+const {validateDate, validateEditUser, validateRule} = require("../helpers/joiSchema");
 
 class AdminController {
     toggleStatusCensor(req, res) {
@@ -129,6 +129,55 @@ class AdminController {
             return res.status(500).json({error: 'Internal server error'});
         }
     }
+
+    async createRule(req, res) {
+        try {
+            const {error} = validateRule(req.body);
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return await adminServices.createRule(req.body, res)
+        } catch (error) {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    }
+    async updateRule(req, res) {
+        try {
+            const id = req.query.id
+            if (!id) {
+                return res.status(400).json({
+                    message: "\"id\" is required",
+                });
+            }
+            return await adminServices.updateRule(id , req.body, res)
+        } catch (error) {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
+    async deleteRule(req, res) {
+        try {
+            const id = req.query.id
+            if (!id) {
+                return res.status(400).json({
+                    message: "\"id\" is required",
+                });
+            }
+            return await adminServices.deleteRule(id, res)
+        } catch (error) {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
+    async getRules(req, res) {
+        try {
+            return await adminServices.getRules(req.query, res)
+        } catch (error) {
+            return res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
 
 }
 

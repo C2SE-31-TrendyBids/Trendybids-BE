@@ -17,6 +17,10 @@ router.get('/get-summary', adminController.getSummary)
 router.get('/get-summary-product-auction', adminController.getLineChartProductAuction)
 router.get('/get-profit', adminController.getProfit)
 router.get('/get-transaction-history', adminController.getTransactionHistory)
+router.post('/create-rule', adminController.createRule)
+router.put('/update-rule', adminController.updateRule)
+router.delete('/delete-rule', adminController.deleteRule)
+router.get('/get-rules', adminController.getRules)
 
 
 module.exports = router
