@@ -4,6 +4,7 @@ const Role = require('../models/role')
 const ProductAuction = require('../models/productAuction')
 const TransactionHistory = require('../models/transactionHistory')
 const MemberOrganization = require('../models/memberOrganization')
+const Rule = require('../models/rule')
 const {Op, where, Sequelize} = require("sequelize");
 const {uploadFile, deleteFile, deleteMultipleFile} = require("../config/firebase.config");
 const sendEmail = require('../util/sendMail')
@@ -72,7 +73,7 @@ class AdminService {
     }
 
 
-    async getUsers(userId, { page, limit, order, fullName, roleId, status, email }, res) {
+    async getUsers(userId, {page, limit, order, fullName, roleId, status, email}, res) {
         try {
             const queries = {raw: true, nes: true}
 
@@ -84,10 +85,10 @@ class AdminService {
             if (order) queries.order = [order]
 
             const userQuery = {
-                ...(fullName ? { fullName: { [Op.iLike]: `${fullName}%` } } : {}),
-                ...(email ? { email: { [Op.iLike]: `${email}%` } } : {}),
-                ...(status ? { status } : {}),
-                id: { [Op.not]: userId }
+                ...(fullName ? {fullName: {[Op.iLike]: `${fullName}%`}} : {}),
+                ...(email ? {email: {[Op.iLike]: `${email}%`}} : {}),
+                ...(status ? {status} : {}),
+                id: {[Op.not]: userId}
             }
 
             const {count, rows} = await User.findAndCountAll({
@@ -503,6 +504,95 @@ class AdminService {
             throw new Error(error)
         }
     }
+
+    async createRule({ruleNumber, description}, res) {
+        try {
+            console.log({ruleNumber, description});
+            const rule = await Rule.create({
+                ruleNumber,
+                description
+            })
+            return res.status(201).json({
+                message: "Create rule successfully",
+                rule
+            })
+        } catch (error) {
+            console.log(error)
+            throw new Error(error)
+        }
+    }
+
+    async updateRule(id,{ ruleNumber, description}, res) {
+        try {
+            const rule = await Rule.findOne({
+                where: {id}
+            })
+            if (!rule) {
+                return res.status(404).json({
+                    message: "Rule is not found"
+                })
+            }
+            await rule.update({
+                ruleNumber,
+                description
+            })
+            return res.status(200).json({
+                message: "Update rule successfully"
+            })
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    async deleteRule(id, res) {
+        try {
+            const rule = await Rule.findOne({
+                where: {id}
+            })
+            if (!rule) {
+                return res.status(404).json({
+                    message: "Rule is not found"
+                })
+            }
+            await rule.destroy();
+            return res.status(200).json({
+                message: "Delete rule successfully"
+            });
+
+        } catch (error) {
+            throw new Error(error)
+        }
+    }
+
+    async getRules({}, res) {
+        try {
+            const allRules = await Rule.findAll();
+            const rulesByRuleNum = {};
+
+            allRules.forEach(rule => {
+                if (!rulesByRuleNum[rule.ruleNumber]) {
+                    rulesByRuleNum[rule.ruleNumber] = {
+                        ruleNumber: rule.ruleNumber.toString(),
+                        ruleItems: []
+                    };
+                }
+                rulesByRuleNum[rule.ruleNumber].ruleItems.push({
+                    id: rule.id,
+                    description: rule.description,
+                    ruleNumber: rule.ruleNumber,
+                    createdAt: rule.createdAt,
+                    updatedAt: rule.updatedAt
+                });
+            });
+
+            const rulesArray = Object.values(rulesByRuleNum);
+            return res.status(200).json({ rules: rulesArray });
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
+
 
 }
 

@@ -155,6 +155,21 @@ const validateDate = (data) => {
     return schema.validate(data);
 };
 
+
+const validateRule = (data) => {
+    const schema = joi.object({
+        description: joi.string().custom((value, helpers) => {
+            if (/<\/?[a-z][\s\S]*>/i.test(value)) {
+                return helpers.error('any.invalid');
+            }
+            return value;
+        }).required(),
+        ruleNumber: joi.number().required(),
+    });
+
+    return schema.validate(data);
+};
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -170,5 +185,6 @@ module.exports = {
     validateCreateConversation,
     validateDate,
     validatePayment,
-    validateIsReturnMoney
+    validateIsReturnMoney,
+    validateRule
 }
