@@ -117,8 +117,8 @@ const validatePayment = (index, amount) => {
     const data = { index, amount };
     return joi.object({
         index: joi.alternatives().try(
-            joi.number().integer().min(1).max(6),
-            joi.string().regex(/^\d+$/).min(1).max(6)
+            joi.number().integer().min(1).max(7),
+            joi.string().regex(/^\d+$/).min(1).max(7)
         ).required(),
         amount: joi.alternatives().try(
             joi.number().precision(2).required(),
@@ -126,6 +126,15 @@ const validatePayment = (index, amount) => {
         ).required()
     }).validate(data)
 
+};
+const validateIsReturnMoney = (data) => {
+    const schema = joi.object({
+        receiverId: joi.string().required(),
+        auctionId: joi.string().required(),
+        index: joi.number().integer().required(),
+    });
+
+    return schema.validate(data);
 };
 
 const validateDate = (data) => {
@@ -160,5 +169,6 @@ module.exports = {
     validateEditUser,
     validateCreateConversation,
     validateDate,
-    validatePayment
+    validatePayment,
+    validateIsReturnMoney
 }

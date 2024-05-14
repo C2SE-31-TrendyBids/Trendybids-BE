@@ -23,5 +23,5 @@ router.post('/post-auction-session', censorControllers.postAuctionSession)
 router.put('/update-auction-session/:sessionId', censorControllers.updateAuctionSession)
 router.delete('/delete-auction-session/:sessionId', censorControllers.deleteAuctionSession)
 
-
+router.get('/get-user-participating', censorControllers.getUserParticipating)
 module.exports = router

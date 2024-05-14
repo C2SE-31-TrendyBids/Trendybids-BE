@@ -12,7 +12,7 @@ const TransactionHistory = sequelize.define("transaction_history", {
         type: DataTypes.DECIMAL(10, 2),
         field: 'number_Money',
     },
-    transactionType: DataTypes.ENUM('Posting_fee', 'Auction_fee', 'Product_fee', 'Top_up', 'Tranfer_money', 'Mortgage_assets'),
+    transactionType: DataTypes.ENUM('Posting_fee', 'Auction_fee', 'Product_fee', 'Top_up', 'Tranfer_money', 'Mortgage_assets', 'Admin_return'),
     paymentMethods: DataTypes.ENUM('PayPal', 'E_Wallet', 'Bank'),
     userId: {
         type: DataTypes.UUID,

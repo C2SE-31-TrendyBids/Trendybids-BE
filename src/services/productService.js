@@ -3,15 +3,15 @@ const Censor = require('../models/censor')
 const User = require('../models/user')
 const PrdImage = require('../models/prdImage')
 const Category = require('../models/category')
-const {Op} = require("sequelize");
-const {uploadMultipleFile, deleteMultipleFile, deleteFile} = require("../config/firebase.config");
+const { Op } = require("sequelize");
+const { uploadMultipleFile, deleteMultipleFile, deleteFile } = require("../config/firebase.config");
 const prdImage = require("../models/prdImage");
 const censorServices = require("../services/censorService")
 
 class ProductServices {
 
     async commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query) {
-        const queries = {raw: false, nest: true};
+        const queries = { raw: false, nest: true };
         // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
         let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
         const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
@@ -27,56 +27,56 @@ class ProductServices {
         // handle config query
         if (order) queries.order = [order];
         const productQuery = {
-            ...(productName ? {productName: {[Op.substring]: productName}} : {}),
-            ...(categoryId ? {categoryId: categoryId} : {}),
+            ...(productName ? { productName: { [Op.substring]: productName } } : {}),
+            ...(categoryId ? { categoryId: categoryId } : {}),
             ...(priceFrom !== undefined && priceTo !== undefined ?
-                    {startingPrice: {[Op.between]: [priceFrom, priceTo]}} :
-                    priceFrom !== undefined ?
-                        {startingPrice: {[Op.gte]: priceFrom}} :
-                        priceTo !== undefined ?
-                            {startingPrice: {[Op.lte]: priceTo}} :
-                            {}
+                { startingPrice: { [Op.between]: [priceFrom, priceTo] } } :
+                priceFrom !== undefined ?
+                    { startingPrice: { [Op.gte]: priceFrom } } :
+                    priceTo !== undefined ?
+                        { startingPrice: { [Op.lte]: priceTo } } :
+                        {}
             ),
             ...query
         };
 
-        return {queries, productQuery}
+        return { queries, productQuery }
     }
 
-    async getProductOfCensor(userId, {page, limit, order, productName, categoryId, priceFrom, priceTo, ...query}, res) {
+    async getProductOfCensor(userId, { page, limit, order, productName, categoryId, priceFrom, priceTo, ...query }, res) {
         try {
-            const {queries, productQuery} = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
+            const { queries, productQuery } = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
             const censorId = await censorServices.getCensorIdByUserId(userId);
-            const {count, rows} = await Product.findAndCountAll({
-                    where: {censorId: censorId, ...productQuery},
-                    ...queries,
-                    attributes: {exclude: ['censorId', 'ownerProductId', "categoryId"]},
-                    include: [
-                        {
-                            model: User,
-                            as: 'owner',
-                            required: true,
-                            attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken']}
-                        }, {
-                            model: PrdImage,
-                            as: 'prdImages',
-                            attributes: {exclude: ['productId']}
-                        },
-                        {
-                            model: Category,
-                            as: 'category',
-                            required: true,
-                        },
-                        {
-                            model: Censor,
-                            as: 'censor',
-                            required: true,
-                            attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+            const { count, rows } = await Product.findAndCountAll({
+                where: { censorId: censorId, ...productQuery },
+                ...queries,
+                attributes: { exclude: ['censorId', 'ownerProductId', "categoryId"] },
+                include: [
+                    {
+                        model: User,
+                        as: 'owner',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                    }, {
+                        model: PrdImage,
+                        as: 'prdImages',
+                        attributes: { exclude: ['productId'] }
+                    },
+                    {
+                        model: Category,
+                        as: 'category',
+                        required: true,
+                    },
+                    {
+                        model: Censor,
+                        as: 'censor',
+                        required: true,
+                        attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
 
-                        }
-                    ],
-                    distinct: true
-                },
+                    }
+                ],
+                distinct: true
+            },
             );
 
             const totalPages = Math.ceil(count / queries?.limit)
@@ -92,43 +92,43 @@ class ProductServices {
         }
     }
 
-    async getProductOfOwner(userId, {page, limit, order, productName, categoryId, priceFrom, priceTo, ...query}, res) {
+    async getProductOfOwner(userId, { page, limit, order, productName, categoryId, priceFrom, priceTo, ...query }, res) {
         try {
-            const {queries, productQuery} = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
+            const { queries, productQuery } = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
 
-            const {count, rows} = await Product.findAndCountAll({
-                    where: {ownerProductId: userId, ...productQuery},
-                    ...queries,
-                    attributes: {exclude: ['censorId', 'ownerProductId', "categoryId"]},
-                    include: [
-                        {
-                            model: User,
-                            as: 'owner',
-                            required: true,
-                            attributes: {exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken']}
-                        }, {
-                            model: PrdImage,
-                            as: 'prdImages',
-                            attributes: {exclude: ['productId']}
-                        },
-                        {
-                            model: Category,
-                            as: 'category',
-                            required: true,
-                        },
-                        {
-                            model: Censor,
-                            as: 'censor',
-                            required: true,
-                            attributes: {exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId']},
+            const { count, rows } = await Product.findAndCountAll({
+                where: { ownerProductId: userId, ...productQuery },
+                ...queries,
+                attributes: { exclude: ['censorId', 'ownerProductId', "categoryId"] },
+                include: [
+                    {
+                        model: User,
+                        as: 'owner',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                    }, {
+                        model: PrdImage,
+                        as: 'prdImages',
+                        attributes: { exclude: ['productId'] }
+                    },
+                    {
+                        model: Category,
+                        as: 'category',
+                        required: true,
+                    },
+                    {
+                        model: Censor,
+                        as: 'censor',
+                        required: true,
+                        attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
 
-                        }
-                    ],
-                    distinct: true
-                },
+                    }
+                ],
+                distinct: true
+            },
             );
 
-            const totalPages = Math.ceil(count / queries?.limit )
+            const totalPages = Math.ceil(count / queries?.limit)
             return res.status(200).json({
                 message: "Get products successfully!",
                 totalItem: count,
@@ -179,7 +179,7 @@ class ProductServices {
             console.log(deleteImageInFirebase);
 
             // Tìm và xóa ảnh trong cơ sở dữ liệu
-            const imageToDelete = await prdImage.findOne({where: {id: imageId}});
+            const imageToDelete = await prdImage.findOne({ where: { id: imageId } });
             if (imageToDelete) {
                 await imageToDelete.destroy();
                 return res.status(200).json({
@@ -201,7 +201,7 @@ class ProductServices {
     async updateAuctionProduct(productId, userId, body, fileImages, res) {
         try {
             const product = await Product.findOne({
-                where: {id: productId, ownerProductId: userId}
+                where: { id: productId, ownerProductId: userId }
             })
 
             if (!product) {
@@ -239,16 +239,16 @@ class ProductServices {
     async deleteAuctionProduct(productId, userId, res) {
         try {
             const prdImages = await prdImage.findAll({
-                where: {productId}
+                where: { productId }
             })
             const listImageId = prdImages.map((prdImages) => prdImages.id)
 
             const [product, image, imgs] = await Promise.all([
                 Product.destroy({
-                    where: {id: productId, ownerProductId: userId},
+                    where: { id: productId, ownerProductId: userId },
                 }),
                 prdImage.destroy({
-                    where: {productId},
+                    where: { productId },
                 }),
                 deleteMultipleFile(listImageId, "product")
             ])
@@ -267,6 +267,7 @@ class ProductServices {
             throw new Error(error)
         }
     }
+
 }
 
 

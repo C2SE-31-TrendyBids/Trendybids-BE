@@ -148,6 +148,18 @@ class CensorController {
         }
     }
 
+    getUserParticipating(req, res) {
+        try {
+            const { page, limit, productAuctionId } = req.query
+            return censorServices.getAllUserParticipating(productAuctionId, page, limit, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
 }
 
 module.exports = new CensorController()

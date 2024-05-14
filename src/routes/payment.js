@@ -14,6 +14,7 @@ router.get('/get-wallet-by-id', paymentController.getWalletById);
 router.post('/qr-success', paymentController.paymentQrSuccessfully);
 router.post('/otp-tranfer', paymentController.otpTranferMoney);
 router.post('/verify-otp', paymentController.verifyOtpPayment);
+router.post('/is-return-money', paymentController.isReturnMoney)
 
 
 module.exports = router

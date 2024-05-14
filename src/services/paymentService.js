@@ -90,7 +90,8 @@ class PaymentService {
             3: 'Auction_fee',
             4: 'Product_fee',
             5: 'Tranfer_money',
-            6: 'Mortgage_assets'
+            6: 'Mortgage_assets',
+            7: 'Admin_return'
         };
 
         return transactionTypes[index] || 'Mortgage_assets';
@@ -138,7 +139,6 @@ class PaymentService {
                         }
                     ]
                 });
-                console.log(productAuction);
                 let sellerId = productAuction.product.ownerProductId
                 await this.paymentForProduct(amount, senderId, receiverId, sellerId, auctionId, transactionType, paymentMethods);
                 return res.status(200).json({ message: "Paypal Payment Successfully" });
@@ -288,6 +288,8 @@ class PaymentService {
         }
     }
     async paymentQrSuccess(senderId, amount, index, receiverId, auctionId, res) {
+        console.log(auctionId);
+        console.log(senderId);
         try {
             let transactionType = await this.getTransactionType(index)
             let paymentMethods = 'Bank'
@@ -381,6 +383,23 @@ class PaymentService {
             return res.status(200).json({ wallet });
         } catch (error) {
             throw new Error(error)
+        }
+    }
+    async isReturnMoney(senderId, receiverId, auctionId, index, res) {
+        try {
+            let transactionType = await this.getTransactionType(index)
+            const transaction = await TransactionHistory.findOne({
+                where: { userId: senderId, receiverId: receiverId, auctionId: auctionId, transactionType: transactionType },
+            });
+
+            if (!transaction) {
+                return res.status(200).json({ success: false, message: "Transaction not found" });
+            }
+
+            return res.status(200).json({ success: true, message: "Transaction found" });
+        } catch (error) {
+            console.error("Error in isReturnMoney:", error);
+            return res.status(500).json({ success: false, message: "Internal server error" });
         }
     }
 }
