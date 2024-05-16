@@ -6,7 +6,7 @@ const multer = require("multer");
 const { uploadFile } = require("../config/firebase.config");
 const User = require("../models/user");
 
-router.get("/search", userController.searchUser);
+router.post("/send-contact", userController.sendContact);
 
 router.use(verifyToken);
 
@@ -46,5 +46,6 @@ router.get(
     "/get-summary-auction-price/:sessionId",
     userController.getTheNecessaryDataInSession
 );
+router.get("/search", userController.searchUser);
 
 module.exports = router;

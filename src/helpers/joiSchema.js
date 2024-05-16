@@ -170,6 +170,15 @@ const validateRule = (data) => {
     return schema.validate(data);
 };
 
+const validateContact = (body) => {
+    return joi.object({
+        name: joi.string().min(3).max(30).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        phone: joi.string().min(10).max(11).required(),
+        message: joi.string().min(6).required(),
+    }).validate(body)
+}
+
 module.exports = {
     validateRegister,
     validateVerify,
@@ -186,5 +195,6 @@ module.exports = {
     validateDate,
     validatePayment,
     validateIsReturnMoney,
-    validateRule
+    validateRule,
+    validateContact
 }
