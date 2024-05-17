@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const AuctionHistory = require("../models/auctionHistory");
 const User = require("../models/user");
 const {validateBidPrice} = require("../helpers/joiSchema");
+const sendEmail = require("../util/sendMail");
+const readFileTemplate = require("../helpers/readFileTemplate");
 
 class UserServices {
     getCurrentUser(user, res) {
@@ -301,9 +303,10 @@ class UserServices {
         }
     }
 
-    async searchUser({ keyword }, res) {
+    async searchUser(userId, { keyword }, res) {
         const users = await User.findAll({
             where: {
+                id: {[Op.not]: userId},
                 roleId: { [Op.not]: "R03" },
                 fullName: { [Op.iLike]: `%${keyword || null}%` },
             },
@@ -314,6 +317,29 @@ class UserServices {
             totalItem: users.length,
             users: users,
         })
+    }
+
+    async sendContact(body, res) {
+        try {
+            const listAdmin = await User.findAll({
+                where: {roleId: "R03"},
+                attributes: ['email']
+            })
+            const emails = listAdmin.map(item => item.email);
+            if (emails.length > 0) {
+                await sendEmail({
+                    email: emails,
+                    subject: `Notification: New contact from <${body.email}>`,
+                    html: readFileTemplate("receiveContact.hbs", { ...body }),
+                });
+            }
+            return res.status(200).json({
+                message: 'Send contact successfully',
+            })
+        } catch (error) {
+            console.error("Error in sendContact:", error);
+            return ({message: error.message, status: "error"});
+        }
     }
 }
 
