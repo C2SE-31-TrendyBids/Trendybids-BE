@@ -10,6 +10,7 @@ const Category = require("../models/category");
 const Wallet = require("../models/wallet");
 const userParticipat = require('../models/userParticipant');
 const TransactionHistory = require("../models/transactionHistory");
+const Role = require("../models/role");
 class CensorService {
     async register(user, {
         name,
@@ -506,6 +507,51 @@ class CensorService {
             throw new Error(error)
         }
     }
+    async addMemberByEmail(censorId, email, res) {
+        try {
+            const countMember = await MemberOrganization.findAll({
+                where: { censorId: censorId }
+            })
+            if (countMember.length > 10) {
+                return res.status(400).json({ message: "The number of members in the organization is sufficient and cannot be added" })
+            }
+            const user = await User.findOne({
+                where: { email: email }
+            })
+            if (!user || user.roleId !== 'R01') {
+                return res.status(400).json({ message: "User not found" })
+            }
+
+            const userMemberOfOrganization = await MemberOrganization.findOne({
+                where: { userId: user.id, censorId: censorId }
+            })
+            if (userMemberOfOrganization) {
+                return res.status(201).json({ message: "User is already a member of this organization" })
+            }
+            const userMember = await MemberOrganization.findOne({
+                where: { userId: user.id }
+            })
+            if (userMember) {
+                return res.status(201).json({ message: "User is already a member of another organization" })
+            }
+            const addMember = await MemberOrganization.create({
+                userId: user.id,
+                censorId: censorId
+            });
+
+            if (addMember) {
+                await User.update({ roleId: 'R04' }, {
+                    where: { id: user.id }
+                });
+            }
+
+            return res.status(200).json({ message: "Add user to organization successfully" });
+        } catch (error) {
+            console.error("Error:", error);
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
+    }
+
     async getAllUserParticipating(productAuctionId, page, limit, res) {
         try {
             const offset = (page - 1) * limit;
@@ -540,7 +586,6 @@ class CensorService {
                 offset,
                 limit
             })
-
             const totalCount = await userParticipat.count({ where: { productAuctionId } });
             const totalPages = Math.ceil(totalCount / limit);
             const userCount = userParticipant.length;
@@ -561,8 +606,84 @@ class CensorService {
             });
         }
     }
+    async getAllMembers(censorId, page, limit, res) {
+        try {
+            const offset = (page - 1) * limit;
+            const member = await MemberOrganization.findAll({
+                where: { censorId: censorId },
+                attributes: { exclude: ["userId"] },
+                include: [
+                    {
+                        model: User,
+                        as: 'user',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] },
+                        include: [{
+                            model: Role,
+                            as: 'role',
+                            attributes: { exclude: ['id'] },
+                        }]
+                    },
+                ],
+                offset,
+                limit
+            })
+            const memberCount = await MemberOrganization.findAll({
+                where: { censorId: censorId }
+            })
 
-
+            const totalPages = Math.ceil(memberCount.length / limit);
+            const userCount = member.length;
+            return res.status(200).json({
+                message: "Find member successfully",
+                userCount: userCount,
+                totalPages: totalPages,
+                member: member
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async getUserByEmail(email, res) {
+        try {
+            const user = await User.findOne({
+                where: { email: email },
+                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'refreshToken'] },
+            })
+            if (user.roleId !== 'R01') {
+                return res.status(400).json({ message: "User not found" })
+            }
+            return res.status(200).json({
+                message: "Find user successfully",
+                user: user
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
+    async removeMember(userId, res) {
+        try {
+            const member = MemberOrganization.destroy({
+                where: { userId: userId }
+            })
+            if (member) {
+                await User.update({ roleId: 'R01' }, {
+                    where: { id: userId }
+                });
+            }
+            return res.status(200).json({
+                message: "Delete member successfully",
+            });
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal server error"
+            });
+        }
+    }
 }
 
 module.exports = new CensorService()

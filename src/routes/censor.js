@@ -12,6 +12,8 @@ router.get("/get-censor", censorControllers.getCensorByQuery);
 
 router.use(verifyToken)
 router.post("/register-censor", upload.single('avatar'), censorControllers.registerCensor);
+router.get('/get-all-member', censorControllers.getAllMemberOrganization)
+
 router.use(isCensor)
 router.post('/approve-auction-product', censorControllers.approveAuctionProduct)
 router.get("/my-auction-session", censorControllers.getAuctionByToken);
@@ -24,4 +26,9 @@ router.put('/update-auction-session/:sessionId', censorControllers.updateAuction
 router.delete('/delete-auction-session/:sessionId', censorControllers.deleteAuctionSession)
 
 router.get('/get-user-participating', censorControllers.getUserParticipating)
+
+router.post('/add-member', censorControllers.addMemberToOrganization)
+router.get('/get-user', censorControllers.getUserForCensor)
+router.delete('/delete-member/:userId', censorControllers.removeMember)
+
 module.exports = router
