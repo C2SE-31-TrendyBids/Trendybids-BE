@@ -14,6 +14,10 @@ const initRoles = [
         id: 'R03',
         name: 'Admin',
     },
+    {
+        id: 'R04',
+        name: 'Member',
+    },
 ];
 
 const initCategories = [

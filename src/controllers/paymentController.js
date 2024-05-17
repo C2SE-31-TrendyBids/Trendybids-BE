@@ -1,5 +1,5 @@
 const PaymentService = require('../services/paymentService')
-const { validatePayment } = require('../helpers/joiSchema')
+const { validatePayment, validateIsReturnMoney } = require('../helpers/joiSchema')
 class PaymentController {
     async createPaymentForUser(req, res) {
         try {
@@ -76,7 +76,7 @@ class PaymentController {
                 return res.status(400).json({
                     message: error.details[0].message,
                 });
-            }
+            };
             return await PaymentService.paymentQrSuccess(senderId, amount, index, receiverId, auctionId, res);
         } catch (error) {
             res.status(500).json({ error: 'Error creating payment' });
@@ -102,6 +102,22 @@ class PaymentController {
         } catch (error) {
             res.status(500).json({ error: 'Error creating otp' });
 
+        }
+    }
+    isReturnMoney(req, res) {
+        try {
+            const senderId = req.user.dataValues.id
+            const { receiverId, auctionId, index } = req.body;
+            // const validationResult = validateInput({ receiverId, auctionId, index });
+            // if (validationResult.error) {
+            //     return res.status(400).json({ error: validationResult.error.details[0].message });
+            // }
+            return PaymentService.isReturnMoney(senderId, receiverId, auctionId, index, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
         }
     }
 }

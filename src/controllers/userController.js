@@ -1,5 +1,5 @@
 const userServices = require("../services/userServices");
-const { validateBidPrice } = require("../helpers/joiSchema");
+const { validateContact} = require("../helpers/joiSchema");
 
 class UserController {
     getCurrentUser(req, res) {
@@ -104,7 +104,22 @@ class UserController {
 
     searchUser(req, res) {
         try {
-            return userServices.searchUser(req.query, res);
+            return userServices.searchUser(req?.user?.id, req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+
+    sendContact(req, res) {
+        try {
+            const { error } = validateContact(req.body);
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return userServices.sendContact(req.body, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
