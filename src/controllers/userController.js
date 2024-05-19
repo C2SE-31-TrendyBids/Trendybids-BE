@@ -1,5 +1,5 @@
 const userServices = require("../services/userServices");
-const { validateContact} = require("../helpers/joiSchema");
+const { validateContact } = require("../helpers/joiSchema");
 
 class UserController {
     getCurrentUser(req, res) {
@@ -120,6 +120,17 @@ class UserController {
                     message: error.details[0].message,
                 });
             return userServices.sendContact(req.body, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+    getTransaction(req, res) {
+        try {
+            const userId = req.user.dataValues.id
+            const { pageNumber, limit } = req.query
+            return userServices.getTransaction(userId, pageNumber, limit, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

@@ -9,6 +9,7 @@ const User = require("../models/user");
 router.post("/send-contact", userController.sendContact);
 
 router.use(verifyToken);
+router.get("/get-transaction", userController.getTransaction);
 
 const upload = multer({ storage: multer.memoryStorage() });
 

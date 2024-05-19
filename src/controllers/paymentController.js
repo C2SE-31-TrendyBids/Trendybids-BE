@@ -72,6 +72,7 @@ class PaymentController {
             const senderId = req.user.dataValues.id
             const { amount, index, receiverId, auctionId } = req.body
             const { error } = validatePayment(index, amount);
+            console.log(req.body);
             if (error) {
                 return res.status(400).json({
                     message: error.details[0].message,

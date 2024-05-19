@@ -104,5 +104,19 @@ class StatisticalController {
             });
         }
     }
+    getAuctionBidsSuccess(req, res) {
+        try {
+            const userId = req.user.dataValues.id
+            const { pageNumber, limit } = req.query
+            return StatisticalService.getProductBidsSuccess(userId, pageNumber, limit, res);
+        } catch (error) {
+            console.log(err);
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: err.message
+            });
+        }
+    }
+
 }
 module.exports = new StatisticalController();
