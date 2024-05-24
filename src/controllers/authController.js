@@ -16,7 +16,6 @@ class AuthController {
             });
         }
     }
-
     async verifyOTP(req, res) {
         try {
             const { error } = validateVerify(req.body);
@@ -31,7 +30,6 @@ class AuthController {
             });
         }
     }
-
     async login(req, res) {
         try {
             const { error } = validateLogin(req.body);
@@ -46,7 +44,6 @@ class AuthController {
             });
         }
     }
-
     async forgotPassword(req, res) {
         try {
             const { error } = validateForgotPassword(req.body);
@@ -61,7 +58,21 @@ class AuthController {
             });
         }
     }
-
+    async verifyFogotPass(req, res) {
+        try {
+            const { error } = validateVerify(req.body);
+            console.log(req.body);
+            if (error)
+                return res.status(400).json({
+                    message: error.details[0].message,
+                });
+            return authServices.verifyOTPResetPass(req.body, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
     async resetPassword(req, res) {
         try {
             const { error } = validateResetPassword(req.body);

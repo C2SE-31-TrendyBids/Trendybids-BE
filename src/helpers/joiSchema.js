@@ -43,7 +43,6 @@ const validateForgotPassword = (body) => {
 const validateResetPassword = (body) => {
     return joi.object({
         email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
-        otp: joi.string().min(6).max(6).required(),
         password: joi.string().min(6).required(),
     }).validate(body)
 }
@@ -55,6 +54,7 @@ const validateAuctionProduct = (body) => {
         startingPrice: joi.number().required(),
         categoryId: joi.string().required(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 
@@ -65,6 +65,7 @@ const validateUpdateProduct = (body) => {
         startingPrice: joi.number(),
         categoryId: joi.string(),
         censorId: joi.string(),
+        status: joi.string(),
     }).validate(body)
 }
 
@@ -112,6 +113,71 @@ const validateCreateConversation = (body) => {
         content: joi.string().required(),
     }).validate(body)
 }
+const validatePayment = (index, amount) => {
+    const data = { index, amount };
+    return joi.object({
+        index: joi.alternatives().try(
+            joi.number().integer().min(1).max(7),
+            joi.string().regex(/^\d+$/).min(1).max(7)
+        ).required(),
+        amount: joi.alternatives().try(
+            joi.number().precision(2).required(),
+            joi.string().regex(/^\d+(\.\d{1,2})?$/).required()
+        ).required()
+    }).validate(data)
+
+};
+const validateIsReturnMoney = (data) => {
+    const schema = joi.object({
+        receiverId: joi.string().required(),
+        auctionId: joi.string().required(),
+        index: joi.number().integer().required(),
+    });
+
+    return schema.validate(data);
+};
+
+const validateDate = (data) => {
+    const currentYear = new Date().getFullYear(); // Get the current year
+    const schema = joi.object({
+        year: joi.number().max(currentYear).required(), // Year must be less than the current year
+        period: joi.string().valid('week', 'month', 'year').insensitive().required(),
+        month: joi.number().min(1).max(12).when('period', {
+            is: 'month',
+            then: joi.required()
+        }),
+        week: joi.number().min(1).max(4).when('period', {
+            is: 'week',
+            then: joi.required()
+        })
+    });
+
+    return schema.validate(data);
+};
+
+
+const validateRule = (data) => {
+    const schema = joi.object({
+        description: joi.string().custom((value, helpers) => {
+            if (/<\/?[a-z][\s\S]*>/i.test(value)) {
+                return helpers.error('any.invalid');
+            }
+            return value;
+        }).required(),
+        ruleNumber: joi.number().required(),
+    });
+
+    return schema.validate(data);
+};
+
+const validateContact = (body) => {
+    return joi.object({
+        name: joi.string().min(3).max(30).required(),
+        email: joi.string().email({ minDomainSegments: 2, tlds: { allow: ["com"] } }).required(),
+        phone: joi.string().min(10).max(11).required(),
+        message: joi.string().min(6).required(),
+    }).validate(body)
+}
 
 module.exports = {
     validateRegister,
@@ -125,5 +191,10 @@ module.exports = {
     validateAuctionSession,
     validateBidPrice,
     validateEditUser,
-    validateCreateConversation
+    validateCreateConversation,
+    validateDate,
+    validatePayment,
+    validateIsReturnMoney,
+    validateRule,
+    validateContact
 }

@@ -40,11 +40,6 @@ const User = sequelize.define("user", {
         field: 'refresh_token',
         allowNull: true
     },
-    walletId: {
-        type: DataTypes.UUID,
-        allowNull: true,
-        field: 'wallet_id',
-    },
     roleId: {
         type: DataTypes.STRING(10),
         field: 'role_id',

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receive Contact</title>
+    <style>
+        .wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background-color: #e2f0ff;
+        }
+        .container {
+            width: 500px;
+            padding: 2rem;
+            margin: 0 auto;
+            text-align: center;
+            color: #334155;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border-radius: 0.75rem;
+        }
+        .container .title {
+            font-size: 1.5rem;
+            text-align: inherit;
+        }
+        .container .content-item {
+            text-align: start;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        .footer {
+            text-align: right;
+            color: #999999;
+            font-size: 10px;
+        }
+        .footer-item {
+            margin-bottom: 5px;
+            color: #666666;
+        }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <div class="container">
+        <h2 class="title">NEW CONTACT</h2>
+        <p class="content-item"><strong>Name:</strong> {{name}}</p>
+        <p class="content-item"><strong>Email:</strong> {{email}}</p>
+        <p class="content-item"><strong>Phone number:</strong> {{phone}}</p>
+        <p class="content-item"><strong>Message:</strong>{{message}}</p>
+        <div class="footer">
+            <p class="footer-item">TrendyBids</p>
+            <p class="footer-item">254, Nguyen Van Linh,<br/> Thanh Khue District, Da Nang
+                City</p>
+            <p class="footer-item">Vietnam</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+

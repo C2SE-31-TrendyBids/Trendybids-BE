@@ -81,7 +81,7 @@ class CensorController {
                     message: '\"productId\" is required',
                 });
             }
-            return censorServices.rejecteAuctionProduct(req.user.id, productId, res)
+            return censorServices.rejecteAuctionProduct(req.user.id, req.body, res)
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",
@@ -147,6 +147,74 @@ class CensorController {
             });
         }
     }
+
+    getUserParticipating(req, res) {
+        try {
+            const { page, limit, productAuctionId } = req.query
+            return censorServices.getAllUserParticipating(productAuctionId, page, limit, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
+    addMemberToOrganization(req, res) {
+        try {
+            const censorId = req.censor.dataValues.id
+            const email = req.body.email
+            console.log(email);
+            return censorServices.addMemberByEmail(censorId, email, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+
+    }
+    getAllMemberOrganization(req, res) {
+        try {
+            const censorId = req.memberOrganization.dataValues.censorId
+            const { page, limit } = req.query
+            return censorServices.getAllMembers(censorId, page, limit, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+    getUserForCensor(req, res) {
+        try {
+            const email = req.query.email
+            return censorServices.getUserByEmail(email, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+    removeMember(req, res) {
+        try {
+            const userId = req.params.userId
+            console.log(userId);
+            if (!userId) {
+                return res.status(400).json({
+                    message: "userId is required"
+                });
+            }
+            return censorServices.removeMember(userId, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
 
 }
 

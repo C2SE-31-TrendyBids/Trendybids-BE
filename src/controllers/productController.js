@@ -3,10 +3,18 @@ const { validateAuctionProduct, validateUpdateProduct } = require("../helpers/jo
 
 
 class ProductController {
-    async getProductByQuery(req, res) {
+    async getProductOfOwner(req, res) {
         try {
-
-            return await productServices.getAll(req?.user?.id, req?.user?.role, req.query, res);
+            return await productServices.getProductOfOwner(req?.user?.id, req.query, res);
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+            });
+        }
+    }
+    async getProductOfCensor(req, res) {
+        try {
+            return await productServices.getProductOfCensor(req?.user?.id, req.query, res);
         } catch (error) {
             return res.status(500).json({
                 message: "Internal Server Error",

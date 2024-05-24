@@ -12,6 +12,8 @@ router.post("/login", authController.login);
 
 router.post("/forgot-password", authController.forgotPassword);
 
+router.post("/verify-fogot-pass", authController.verifyFogotPass);
+
 router.post("/reset-password", authController.resetPassword);
 
 router.get("/google", passport.authenticate('google', {

@@ -5,6 +5,7 @@ const Censor = require('../models/censor');
 const Product = require('../models/product');
 const PrdImage = require('../models/prdImage');
 const ProductAuction = require('../models/productAuction');
+const TransactionHistory = require('../models/transactionHistory');
 const {
     initRoles,
     initCategories,
@@ -12,7 +13,8 @@ const {
     initCensors,
     initProducts,
     initPrdImages,
-    initProductAuctions
+    initProductAuctions,
+    initTransactions
 } = require('./data');
 
 const run = async () => {
@@ -24,6 +26,7 @@ const run = async () => {
         await Product.bulkCreate(initProducts),
         await PrdImage.bulkCreate(initPrdImages),
         await ProductAuction.bulkCreate(initProductAuctions),
+        await TransactionHistory.bulkCreate(initTransactions),
     ]);
 }
 

@@ -10,36 +10,45 @@ const censorServices = require("../services/censorService")
 
 class ProductServices {
 
-    async getAll(userId, role, { page, limit, order, productName, categoryId, priceFrom, priceTo, ...query }, res) {
+    async commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query) {
+        const queries = { raw: false, nest: true };
+        // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
+        let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
+        const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
+
+        // If pageNumber is less than 1, set it to 1
+        pageNumber = pageNumber < 1 ? 1 : pageNumber;
+        // Calculate the offset
+        const offset = (pageNumber - 1) * limitNumber;
+
+        queries.offset = offset;
+        queries.limit = limitNumber;
+
+        // handle config query
+        if (order) queries.order = [order];
+        const productQuery = {
+            ...(productName ? { productName: { [Op.substring]: productName } } : {}),
+            ...(categoryId ? { categoryId: categoryId } : {}),
+            ...(priceFrom !== undefined && priceTo !== undefined ?
+                { startingPrice: { [Op.between]: [priceFrom, priceTo] } } :
+                priceFrom !== undefined ?
+                    { startingPrice: { [Op.gte]: priceFrom } } :
+                    priceTo !== undefined ?
+                        { startingPrice: { [Op.lte]: priceTo } } :
+                        {}
+            ),
+            ...query
+        };
+
+        return { queries, productQuery }
+    }
+
+    async getProductOfCensor(userId, { page, limit, order, productName, categoryId, priceFrom, priceTo, ...query }, res) {
         try {
-            const queries = { raw: false, nest: true };
-            // Ensure page and limit are converted to numbers, default to 1 if not provided or invalid
-            let pageNumber = isNaN(parseInt(page)) ? 1 : parseInt(page);
-            const limitNumber = isNaN(parseInt(limit)) ? 4 : parseInt(limit);
-
-            // If pageNumber is less than 1, set it to 1
-            pageNumber = pageNumber < 1 ? 1 : pageNumber;
-            // Calculate the offset
-            const offset = (pageNumber - 1) * limitNumber;
-
-            queries.offset = offset;
-            queries.limit = limitNumber;
-
-            // handle config query
-            if (order) queries.order = [order];
-            const roleCensor = "R02"
+            const { queries, productQuery } = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
             const censorId = await censorServices.getCensorIdByUserId(userId);
-            const productQuery = {
-                ...(role?.dataValues?.id === roleCensor ? { censorId: censorId } : { ownerProductId: userId }),
-                ...(productName ? { productName: { [Op.substring]: productName } } : {}),
-                ...(categoryId ? { categoryId: categoryId } : {}),
-                ...(priceFrom !== undefined ? { startingPrice: { [Op.gte]: priceFrom } } : {}),
-                ...(priceTo !== undefined ? { startingPrice: { [Op.lte]: priceTo } } : {}),
-                ...query
-            };
-
             const { count, rows } = await Product.findAndCountAll({
-                where: productQuery,
+                where: { censorId: censorId, ...productQuery },
                 ...queries,
                 attributes: { exclude: ['censorId', 'ownerProductId', "categoryId"] },
                 include: [
@@ -70,7 +79,56 @@ class ProductServices {
             },
             );
 
-            const totalPages = Math.ceil(count / limitNumber)
+            const totalPages = Math.ceil(count / queries?.limit)
+            return res.status(200).json({
+                message: "Get products successfully!",
+                totalItem: count,
+                totalPages: totalPages,
+                products: rows
+            });
+        } catch (err) {
+            console.log(err);
+            throw new Error(err)
+        }
+    }
+
+    async getProductOfOwner(userId, { page, limit, order, productName, categoryId, priceFrom, priceTo, ...query }, res) {
+        try {
+            const { queries, productQuery } = await this.commonQueryOfProduct(page, limit, order, productName, categoryId, priceFrom, priceTo, query)
+
+            const { count, rows } = await Product.findAndCountAll({
+                where: { ownerProductId: userId, ...productQuery },
+                ...queries,
+                attributes: { exclude: ['censorId', 'ownerProductId', "categoryId"] },
+                include: [
+                    {
+                        model: User,
+                        as: 'owner',
+                        required: true,
+                        attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken'] }
+                    }, {
+                        model: PrdImage,
+                        as: 'prdImages',
+                        attributes: { exclude: ['productId'] }
+                    },
+                    {
+                        model: Category,
+                        as: 'category',
+                        required: true,
+                    },
+                    {
+                        model: Censor,
+                        as: 'censor',
+                        required: true,
+                        attributes: { exclude: ['walletId', 'roleId', 'createdAt', 'updatedAt', 'userId'] },
+
+                    }
+                ],
+                distinct: true
+            },
+            );
+
+            const totalPages = Math.ceil(count / queries?.limit)
             return res.status(200).json({
                 message: "Get products successfully!",
                 totalItem: count,
@@ -101,16 +159,19 @@ class ProductServices {
                     productId: product.id
                 };
             });
-            const image = await prdImage.bulkCreate(prdImageModels)
+            await prdImage.bulkCreate(prdImageModels)
 
             return res.status(200).json({
                 message: "Post product successfully",
+                product: product,
+                thumbnail: imageURLs[0]
             });
 
         } catch (error) {
             throw new Error(error)
         }
     }
+
     async deleteImageProduct(imageId, res) {
         try {
             // Xóa ảnh khỏi Firebase
@@ -136,6 +197,7 @@ class ProductServices {
             });
         }
     }
+
     async updateAuctionProduct(productId, userId, body, fileImages, res) {
         try {
             const product = await Product.findOne({
@@ -162,7 +224,8 @@ class ProductServices {
             }
 
             await product.update({
-                ...body
+                ...body,
+                note: null
             })
 
             return res.status(200).json({
@@ -200,9 +263,11 @@ class ProductServices {
                 message: "Delete successfully",
             });
         } catch (error) {
+            console.log(error)
             throw new Error(error)
         }
     }
+
 }
 
 

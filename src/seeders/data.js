@@ -1,5 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('sequelize');
+const bcrypt = require("bcryptjs");
 const initRoles = [
     {
         id: 'R01',
@@ -12,6 +13,10 @@ const initRoles = [
     {
         id: 'R03',
         name: 'Admin',
+    },
+    {
+        id: 'R04',
+        name: 'Member',
     },
 ];
 
@@ -58,12 +63,16 @@ const initPrdImages = [];
 const initProductAuctions = [];
 const quantity = 15;
 
+const hashPassword = bcrypt.hashSync(
+    '123456789',
+    bcrypt.genSaltSync(8)
+);
 for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     const newUser = {
         id: faker.string.uuid(),
         fullName: faker.person.fullName(),
         email: faker.internet.email(),
-        password: faker.internet.password(),
+        password: hashPassword,
         phoneNumber: faker.number.int(10, 11),
         avatarUrl: faker.image.avatar(),
         address: faker.location.streetAddress(),
@@ -82,7 +91,7 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
         founding: faker.date.past().toISOString().slice(0, 10),
         address: faker.location.streetAddress(),
         userId: initUsers[Math.floor(Math.random() * initUsers.length)].id,
-        roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
+        // roleId: 'R' + (Math.floor(Math.random() * initRoles.length) + 1).toString().padStart(2, '0')
     };
     initCensors.push(newCensor);
 }
@@ -122,6 +131,28 @@ for (let i = 0; i < quantity + Math.floor(Math.random() * 6); i++) {
     initProductAuctions.push(newProductAuction);
 }
 
+// Generate random transaction data
+const initTransactions = [];
+for (let i = 0; i < quantity; i++) {
+    const transactionType = Math.random() > 0.5 ? 'Posting_fee' : 'Auction_fee';
+    const amount = parseFloat((Math.random() * 100).toFixed(2));
+    const userId = initUsers[Math.floor(Math.random() * initUsers.length)].id;
+
+    let receiverId;
+
+    // Assign random receiver (different from sender)
+    do {
+        receiverId = initUsers[Math.floor(Math.random() * initUsers.length)].id;
+    } while (receiverId === userId); // Ensure receiver is not the sender
+
+    initTransactions.push({
+        money: amount,
+        transactionType,
+        userId,
+        receiverId,
+    });
+}
+
 
 module.exports = {
     initRoles,
@@ -130,5 +161,6 @@ module.exports = {
     initCensors,
     initProducts,
     initPrdImages,
-    initProductAuctions
+    initProductAuctions,
+    initTransactions
 }

@@ -1,10 +1,13 @@
 const ProductAuction = require("../models/productAuction");
 const UserParticipant = require("../models/userParticipant");
-const { Sequelize, Op} = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const AuctionHistory = require("../models/auctionHistory");
 const User = require("../models/user");
-const {validateBidPrice} = require("../helpers/joiSchema");
+const { validateBidPrice } = require("../helpers/joiSchema");
+const sendEmail = require("../util/sendMail");
+const readFileTemplate = require("../helpers/readFileTemplate");
+const transactionHistory = require('../models/transactionHistory')
 
 class UserServices {
     getCurrentUser(user, res) {
@@ -48,7 +51,7 @@ class UserServices {
             throw new Error(error);
         }
     }
-    
+
     async editUser(id, newData, res) {
         try {
             const user = await User.findOne({
@@ -128,7 +131,7 @@ class UserServices {
             const { count, rows } = await AuctionHistory.findAndCountAll({
                 where: { productAuctionId: sessionId },
                 ...queries,
-                attributes: {exclude: ["userId", "updatedAt"]},
+                attributes: { exclude: ["userId", "updatedAt"] },
                 include: [
                     {
                         model: User,
@@ -192,7 +195,7 @@ class UserServices {
 
     async checkUserInAuction(userId, sessionId) {
         const participant = await UserParticipant.findOne({
-            where: {userId, productAuctionId: sessionId}
+            where: { userId, productAuctionId: sessionId }
         });
         if (!participant) {
             return {
@@ -200,7 +203,7 @@ class UserServices {
                 message: "User is not in this auction!"
             }
         }
-        return {status: "success", message: "None"}
+        return { status: "success", message: "None" }
     }
 
 
@@ -212,13 +215,19 @@ class UserServices {
                 message: "Bid price must be greater than the current highest price!"
             }
         }
-        const {error} = validateBidPrice({bidPrice: bidPrice});
+        if (bidPrice > highestPrice * 2) {
+            return {
+                status: "error",
+                message: "Bid price must be less than twice the highest price!"
+            }
+        }
+        const { error } = validateBidPrice({ bidPrice: bidPrice });
         if (error)
             return {
                 status: "error",
                 message: "Bid price must number!"
             }
-        return {status: "success", message: "None"}
+        return { status: "success", message: "None" }
     }
 
     async updateAuctionData(bidPrice, sessionId, userId) {
@@ -241,7 +250,7 @@ class UserServices {
 
     async getUpdatedData(userId, sessionId) {
         const updatedParticipant = await UserParticipant.findOne({
-            where: {userId, productAuctionId: sessionId},
+            where: { userId, productAuctionId: sessionId },
             include: [
                 {
                     model: User,
@@ -251,10 +260,10 @@ class UserServices {
             ]
         });
         const updatedAuctionHistory = await AuctionHistory.findOne({
-            where: {userId: userId}
+            where: { userId: userId }
         });
 
-        return {updatedParticipant, updatedAuctionHistory};
+        return { updatedParticipant, updatedAuctionHistory };
     }
 
     async placeABid(userId, bidPrice, sessionId) {
@@ -262,19 +271,20 @@ class UserServices {
             // check user already in auction
             const isValidParticipant = await this.checkUserInAuction(userId, sessionId);
             if (isValidParticipant?.status === "error") {
-                return {status: "error", userId: userId, message: isValidParticipant.message}
+                return { status: "error", userId: userId, message: isValidParticipant.message }
             }
             // check bid price validity
             const isValidBidPrice = await this.checkBidPrice(bidPrice, sessionId);
             if (isValidBidPrice?.status === "error") {
-                return {status: "error", userId: userId, message: isValidBidPrice.message}
+                return { status: "error", userId: userId, message: isValidBidPrice.message }
             }
             // update auction data
             await this.updateAuctionData(bidPrice, sessionId, userId);
 
-            const {updatedParticipant, updatedAuctionHistory} = await this.getUpdatedData(userId, sessionId);
+            const { updatedParticipant, updatedAuctionHistory } = await this.getUpdatedData(userId, sessionId);
 
-            console.log(updatedParticipant)
+            console.log(updatedAuctionHistory.createdAt)
+            const currentDate = new Date()
 
             return ({
                 status: "success",
@@ -283,20 +293,21 @@ class UserServices {
                     id: updatedAuctionHistory.id,
                     auctionPrice: bidPrice,
                     productAuctionId: sessionId,
-                    createdAt: updatedAuctionHistory.createdAt,
+                    createdAt: currentDate,
                     user: updatedParticipant.user.get({ plain: true }),
                 },
                 highestPrice: bidPrice
             });
         } catch (error) {
             console.error("Error in placeABid:", error);
-            return ({message: error.message, status: "error"});
+            return ({ message: error.message, status: "error" });
         }
     }
 
-    async searchUser({ keyword }, res) {
+    async searchUser(userId, { keyword }, res) {
         const users = await User.findAll({
             where: {
+                id: { [Op.not]: userId },
                 roleId: { [Op.not]: "R03" },
                 fullName: { [Op.iLike]: `%${keyword || null}%` },
             },
@@ -307,6 +318,52 @@ class UserServices {
             totalItem: users.length,
             users: users,
         })
+    }
+
+    async sendContact(body, res) {
+        try {
+            const listAdmin = await User.findAll({
+                where: { roleId: "R03" },
+                attributes: ['email']
+            })
+            const emails = listAdmin.map(item => item.email);
+            if (emails.length > 0) {
+                await sendEmail({
+                    email: emails,
+                    subject: `Notification: New contact from <${body.email}>`,
+                    html: readFileTemplate("receiveContact.hbs", { ...body }),
+                });
+            }
+            return res.status(200).json({
+                message: 'Send contact successfully',
+            })
+        } catch (error) {
+            console.error("Error in sendContact:", error);
+            return ({ message: error.message, status: "error" });
+        }
+    }
+    async getTransaction(userId, pageNumber, limit, res) {
+        try {
+            const offset = (pageNumber - 1) * limit;
+            const count = await transactionHistory.findAll({
+                where: { userId: userId },
+            })
+            const transactions = await transactionHistory.findAll({
+                where: { userId: userId },
+                limit: limit,
+                offset: offset
+            });
+            return res.status(200).json({
+                trans: count,
+                totalTransaction: count.length,
+                totalPage: Math.ceil(count.length / limit),
+                transactionHistory: transactions,
+            });
+        } catch (error) {
+            console.error("Error in sendContact:", error);
+            return ({ message: error.message, status: "error" });
+        }
+
     }
 }
 
