@@ -387,6 +387,12 @@ class PaymentService {
     }
     async isReturnMoney(senderId, receiverId, auctionId, index, res) {
         try {
+            let receiver = await Censor.findOne({ where: { id: receiverId } });
+            if (!receiver) {
+                receiverId = receiverId;
+            } else {
+                receiverId = receiver.userId;
+            }
             let transactionType = await this.getTransactionType(index)
             const transaction = await TransactionHistory.findOne({
                 where: { userId: senderId, receiverId: receiverId, auctionId: auctionId, transactionType: transactionType },
