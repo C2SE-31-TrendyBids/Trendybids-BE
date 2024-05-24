@@ -4,7 +4,7 @@ class StatisticalController {
     getNumberAuction = async (req, res) => {
         try {
             const censorId = req.censor.dataValues.id;
-            const { status } = req.query;
+            const { status } = req.query; 
             if (!censorId) {
                 return res.status(400).json({
                     message: '"Account" is not Censor',
