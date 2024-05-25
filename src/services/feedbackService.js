@@ -1,8 +1,17 @@
 const Feedback = require('../models/feedback');
+const User = require('../models/user');
+
 
 class FeedbackService {
-    async getAllFeedback() {
-        return await Feedback.findAll();
+    async getAllFeedback(productAuctionId) {
+        return await Feedback.findAll({ where: {
+            productAuctionId: productAuctionId
+        }, include: [{
+            model: User,
+            as: 'user',
+            required: true,
+            attributes: ['id', 'full_name', 'email', 'avatar_url'] 
+        }]});
     }
 
     async getFeedbackById(id) {

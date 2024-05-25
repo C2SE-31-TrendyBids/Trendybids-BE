@@ -1,5 +1,6 @@
 const sequelize = require("../config/database");
 const { DataTypes } = require("sequelize");
+const User = require("./user");
 
 const Feedback = sequelize.define("feedback", {
     id: {
@@ -14,6 +15,10 @@ const Feedback = sequelize.define("feedback", {
         type: DataTypes.UUID,
         field: 'user_id'
     },
+    productAuctionId: {
+        type: DataTypes.UUID,
+        // field: 'user_id'
+    },
     createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',
@@ -23,5 +28,7 @@ const Feedback = sequelize.define("feedback", {
     tableName: 'feedback',
     timestamps: false
 });
+
+
 
 module.exports = Feedback;
