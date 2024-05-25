@@ -215,6 +215,17 @@ class CensorController {
         }
     }
 
+    updateStatus(req, res) {
+        try {
+            return censorServices.updateStatusProductAuction(req.query, res)
+        } catch (error) {
+            return res.status(500).json({
+                message: "Internal Server Error",
+                error: error
+            });
+        }
+    }
+
 
 }
 
