@@ -4,6 +4,9 @@ const User = require("../models/user")
 const UserParticipant = require("../models/userParticipant")
 const Product = require('../models/product')
 const { Sequelize } = require('sequelize');
+const PrdImage = require('../models/prdImage')
+const Censor = require('../models/censor')
+
 class StatisticalService {
     async getNumberAuction(censorId, status, res) {
         try {
@@ -124,6 +127,13 @@ class StatisticalService {
                                 as: 'product',
                                 required: true,
                                 attributes: { exclude: ['censorId', 'id ', 'ownerProductId', 'updatedAt', 'categoryId', 'status', 'createdAt'] },
+                                include: [
+                                    {
+                                        model: PrdImage,
+                                        as: 'prdImages',
+                                        attributes: { exclude: ['productId'] }
+                                    },
+                                ],
                             }
                         ]
                     }
@@ -197,6 +207,101 @@ class StatisticalService {
             });
         }
     }
+    async getProductBidsSuccess(userId, pageNumber, limit, res) {
+        try {
+            // Tính toán giá trị offset và limit
+            const offset = (pageNumber - 1) * limit;
+
+            // Retrieve all productAuctionId values that the user has participated in
+            const userParticipants = await UserParticipant.findAll({
+                where: { userId: userId },
+                attributes: ['productAuctionId']
+            });
+
+            // Get the list of productAuctionId
+            const productAuctionIds = userParticipants.map(participant => participant.productAuctionId);
+
+            if (productAuctionIds.length === 0) {
+                return res.status(200).json({ products: [] });
+            }
+
+            // Find all ProductAuction entries with the corresponding productAuctionId
+            const productAuctions = await ProductAuction.findAll({
+                where: { id: productAuctionIds },
+            });
+
+            // Find all successful bids
+            const auctionHistories = await AuctionHistory.findAll({
+                where: {
+                    productAuctionId: productAuctionIds,
+                    userId: userId
+                }
+            });
+
+            // Get the list of products that the user has successfully bid on
+            const successfulProductAuctionIds = [];
+            for (let auction of auctionHistories) {
+                const productAuction = productAuctions.find(pa => pa.id === auction.productAuctionId);
+                if (productAuction && productAuction.highestPrice === auction.auctionPrice) {
+                    successfulProductAuctionIds.push(auction.productAuctionId);
+                }
+            }
+
+            if (successfulProductAuctionIds.length === 0) {
+                return res.status(200).json({ products: [] });
+            }
+
+            // Retrieve details of the successfully bid products with pagination
+            const countsuccessfulProduct = await ProductAuction.count({
+                where: { id: successfulProductAuctionIds },
+
+            })
+            const successfulProductAuctions = await ProductAuction.findAll({
+                where: { id: successfulProductAuctionIds },
+                attributes: { exclude: ['productId', 'censorId'] },
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        required: true,
+                        attributes: { exclude: ['censorId', 'updatedAt', 'ownerProductId', "categoryId"] },
+                        include: [
+                            {
+                                model: User,
+                                as: 'owner',
+                                required: true,
+                                attributes: { exclude: ['password', 'createdAt', 'updatedAt', 'walletId', 'roleId', 'refreshToken', 'address', 'avatarUrl', 'email', 'phoneNumber', 'status'] }
+                            },
+                            {
+                                model: PrdImage,
+                                as: 'prdImages',
+                                attributes: { exclude: ['productId'] }
+                            },
+                        ]
+                    },
+                    {
+                        model: Censor,
+                        as: 'censor',
+                        attributes: { exclude: ['address', 'avatarUrl', 'companyTaxCode', 'founding', 'phoneNumber', 'placeTaxCode', 'position', 'roleId', 'status', 'taxCodeIssuanceDate', 'userId'] }
+                    }
+                ],
+                offset: offset,
+                limit: limit
+            });
+
+            return res.status(200).json({
+                totalPage: Math.ceil(countsuccessfulProduct / limit),
+                countProduct: successfulProductAuctions.length,
+                products: successfulProductAuctions,
+            });
+
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: 'An error occurred while fetching the data.' });
+        }
+    }
+
+
 
 }
 module.exports = new StatisticalService();
