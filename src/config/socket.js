@@ -46,6 +46,7 @@ const initSocket = (server) => {
         socket.on('onSessionJoin', async (payload) => {
             socket.join(payload.sessionId);
             const userId = socket.user.id;
+            console.log({userId});
             const room = await io.sockets.adapter.rooms.get(payload.sessionId);
             const responseUserInAuction= await userServices.checkUserInAuction(userId, payload.sessionId);
             if (room) {

@@ -351,7 +351,8 @@ class UserServices {
             const transactions = await transactionHistory.findAll({
                 where: { userId: userId },
                 limit: limit,
-                offset: offset
+                offset: offset,
+                order: [['createdAt', 'DESC']],
             });
             return res.status(200).json({
                 trans: count,

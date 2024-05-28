@@ -197,7 +197,7 @@ class CensorService {
             const {count, rows} = await ProductAuction.findAndCountAll({
                 where: conditionQuery,
                 ...queries,
-                subQuery: false,
+                subQuery: false, 
                 attributes: {exclude: ['productId', 'censorId']},
                 include: [
                     {
@@ -264,6 +264,13 @@ class CensorService {
         try {
             // get censor id
             const censorId = await this.getCensorIdByUserId(userId)
+            console.log("Censor: " + censorId);
+            if (censorId === null) {
+                return res.status(400).json({
+                    message: "Get my product auctions Fail!",
+                    productAuctions: []
+                });
+            }
             // get queries, query and productQuery
             const {
                 queries,

@@ -477,7 +477,7 @@ class AdminService {
             // Subquery using Sequelize
             const {count, rows} = await TransactionHistory.findAndCountAll({
                 where: {
-                    userId: {
+                    receiverId: {
                         [Op.in]: adminSubquery.map(user => user.id),
                     }
                 },

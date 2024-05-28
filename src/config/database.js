@@ -23,7 +23,7 @@ const connectionDatabase = async () => {
 };
 
 connectionDatabase().then(() => {
-    sequelize.sync({ alter: true }).then(() => {
+    sequelize.sync({ alter: true}).then(() => {
         console.log("Sync table successfully")
     }).catch((error) => {
         console.log(error)

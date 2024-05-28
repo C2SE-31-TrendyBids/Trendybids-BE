@@ -28,7 +28,6 @@ User.belongsToMany(Conversation, { through: ConverParticipant, foreignKey: "user
 
 Censor.hasMany(ProductAuction, { foreignKey: 'censorId', as: 'productAuctions' });
 Censor.belongsTo(User, { foreignKey: 'userId', targetKey: 'id', as: 'user', onDelete: 'CASCADE' });
-Censor.belongsTo(Role, { foreignKey: 'roleId', targetKey: 'id', as: 'role' });
 
 
 Product.hasMany(PrdImage, { foreignKey: 'productId', as: 'prdImages' })
