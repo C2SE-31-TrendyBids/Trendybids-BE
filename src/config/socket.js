@@ -170,8 +170,8 @@ const initSocket = (server) => {
     });
 
     eventEmitter.on('conversation.create', async (payload) => {
-        const parsePayload = JSON.parse(payload);
-        const recipientId = parsePayload.recipient.id;
+        const parsePayload = JSON.parse(payload.data);
+        const recipientId = payload.recipientId;
         console.log(recipientId)
 
         // Check client connected in socket

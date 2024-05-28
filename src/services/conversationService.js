@@ -95,12 +95,12 @@ class ConversationService {
 
             const responseData = {
                 id: newConversation.id,
-                recipient,
+                recipient: messageData.user,
                 latestMessage: messageData
             }
 
             // Emit event to send message to client
-            eventEmitter.emit('conversation.create', JSON.stringify(responseData));
+            eventEmitter.emit('conversation.create', {data: JSON.stringify(responseData), recipientId});
 
             return res.json({
                 message: "Create conversation successfully",
