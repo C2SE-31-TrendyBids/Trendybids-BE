@@ -230,10 +230,13 @@ class AdminService {
         try {
             // count user by role
             const userCount = await this.countUsersByRole('R01');
+            const memberCount = await this.countUsersByRole('R04');
             const censorCount = await this.countUsersByRole('R02');
             const adminReceivedTotal = await this.calculateAdminReceivedTotal();
             const totalAuctions = await this.countTotalProductAuctions();
             return {
+                totalAccounts: userCount + memberCount + censorCount,
+                totalMember: memberCount,
                 totalUsers: userCount,
                 totalCensors: censorCount,
                 totalAuctions: totalAuctions,
